@@ -3,9 +3,9 @@ package lab;
 import javafx.geometry.Point2D;
 
 public class Barrier {
-    private Point2D position;
-    private double width;
-    private double height;
+    private final Point2D position;
+    private final double width;
+    private final double height;
 
     public Barrier(double x, double y, double width, double height) {
         this.position = new Point2D(x, y);
