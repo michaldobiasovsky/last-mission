@@ -1,24 +1,24 @@
 package lab;
 
+import javafx.geometry.Point2D;
+
 public class Barrier {
-    private double x;
-    private double y;
+    private Point2D position;
     private double width;
     private double height;
 
     public Barrier(double x, double y, double width, double height) {
-        this.x = x;
-        this.y = y;
+        this.position = new Point2D(x, y);
         this.width = width;
         this.height = height;
     }
 
     public double getX() {
-        return x;
+        return position.getX();
     }
 
     public double getY() {
-        return y;
+        return position.getY();
     }
 
     public double getWidth() {
@@ -31,7 +31,6 @@ public class Barrier {
 
     public void draw(javafx.scene.canvas.GraphicsContext gc) {
         gc.setFill(javafx.scene.paint.Color.BROWN);
-        gc.fillRect(x, y, width, height);
+        gc.fillRect(position.getX(), position.getY(), width, height);
     }
-
 }
