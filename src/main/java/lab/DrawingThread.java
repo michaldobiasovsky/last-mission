@@ -10,8 +10,7 @@ public class DrawingThread extends AnimationTimer {
 
     private final Canvas canvas;
     private final GraphicsContext gc;
-
-    private World world;
+    private final World world; // změna: final a předává se zvenčí
 
     private double x = 0;
     private double y = 50;
@@ -21,17 +20,13 @@ public class DrawingThread extends AnimationTimer {
     private boolean lastFrameXDirectionChanged = false;
     private boolean lastFrameYDirectionChanged = false;
 
-
-    public DrawingThread(Canvas canvas) {
+    // upravený konstruktor
+    public DrawingThread(Canvas canvas, World world) {
         this.canvas = canvas;
         this.gc = canvas.getGraphicsContext2D();
-        world = new World(canvas.getWidth(), canvas.getHeight());
-
+        this.world = world;
     }
 
-    /**
-     * Draws objects into the canvas. Put you code here.
-     */
     @Override
     public void handle(long now) {
         double delta = lastFrame == 0 ? 0 : (now - lastFrame) / 1_000_000_000D;
@@ -48,19 +43,18 @@ public class DrawingThread extends AnimationTimer {
             speedX *= -0.9;
             lastFrameXDirectionChanged = true;
         } else {
-            lastFrameXDirectionChanged = false; //solve freez o edge
+            lastFrameXDirectionChanged = false;
         }
         if (!lastFrameYDirectionChanged && (y < 0 || y > canvas.getHeight() - 20)) {
             speedY *= -0.8;
             lastFrameYDirectionChanged = true;
         } else {
-            lastFrameYDirectionChanged = false; //solve freez o edge
+            lastFrameYDirectionChanged = false;
         }
     }
 
     private void drawFps(double delta) {
         int fps = calcFps(delta);
-        //gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         gc.setFont(new Font("Arial", 30));
         gc.setFill(Color.BLACK);
         gc.fillText(String.format("FPS: %04d", fps), 10, canvas.getHeight() - 10);
@@ -80,6 +74,4 @@ public class DrawingThread extends AnimationTimer {
         }
         return avergeFps;
     }
-
-
 }
