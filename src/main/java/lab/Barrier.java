@@ -1,36 +1,31 @@
 package lab;
 
-import javafx.geometry.Point2D;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
-public class Barrier {
-    private final Point2D position;
+public class Barrier extends Entity {
     private final double width;
     private final double height;
 
     public Barrier(double x, double y, double width, double height) {
-        this.position = new Point2D(x, y);
+        super(x, y);
         this.width = width;
         this.height = height;
     }
 
-    public double getX() {
-        return position.getX();
-    }
-
-    public double getY() {
-        return position.getY();
-    }
-
+    @Override
     public double getWidth() {
         return width;
     }
 
+    @Override
     public double getHeight() {
         return height;
     }
 
-    public void draw(javafx.scene.canvas.GraphicsContext gc) {
-        gc.setFill(javafx.scene.paint.Color.BROWN);
-        gc.fillRect(position.getX(), position.getY(), width, height);
+    @Override
+    public void draw(GraphicsContext gc) {
+        gc.setFill(Color.BROWN);
+        gc.fillRect(getX(), getY(), width, height);
     }
 }

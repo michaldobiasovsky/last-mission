@@ -2,30 +2,46 @@ package lab;
 
 import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
+import javafx.geometry.Rectangle2D;
 
-public class Lemming {
+public class Lemming extends Entity {
     public static final double WIDTH = 20;
     public static final double HEIGHT = 20;
     private static final double GRAVITY = 400; // px/s^2
 
     private Role role;
 
-    private Point2D position;
     private int direction; // 1 - vpravo, -1 - vlevo
     private double velocityY;
     private final double speedX;
 
     public Lemming(double x, double y) {
-        this.position = new Point2D(x, y);
+        super(x, y);
         this.direction = 1;
         this.velocityY = 0;
         this.role = Role.DEFAULT;
-        this.speedX = 40; // počáteční rychlost v ose X
+        this.speedX = 40;
     }
 
+    @Override
+    public double getWidth() {
+        return WIDTH;
+    }
 
-    public double getX() { return position.getX(); }
-    public double getY() { return position.getY(); }
+    @Override
+    public double getHeight() {
+        return HEIGHT;
+    }
+
+    @Override
+    public Rectangle2D getBoundingBox() {
+        return new Rectangle2D(getX(), getY(), WIDTH, HEIGHT);
+    }
+
+    public void onCollision(Lemming other) {
+        System.out.println("kolize");
+    }
+
     public int getDirection() { return direction; }
     public void changeDirection() { direction *= -1; }
     public void move(double distance) {
@@ -36,11 +52,10 @@ public class Lemming {
     public void setRole(Role role) { this.role = role; }
 
     public void checkCollision(Barrier barrier) {
-        double x = position.getX();
-        double y = position.getY();
+        double x = getX();
+        double y = getY();
         if (x < barrier.getX() + barrier.getWidth() && x + WIDTH > barrier.getX() &&
             y < barrier.getY() + barrier.getHeight() && y + HEIGHT > barrier.getY()) {
-            // kolize z boku
             if (y + HEIGHT - 2 > barrier.getY() && y < barrier.getY() + barrier.getHeight() - 2) {
                 changeDirection();
                 if (direction == 1) {
@@ -49,16 +64,18 @@ public class Lemming {
                     position = new Point2D(barrier.getX() - WIDTH, y);
                 }
             }
-            // kolize se zemí (shora) - pokud y roste nahoru a gravitace je záporná
+
             if (velocityY < 0 && y < barrier.getY() + barrier.getHeight() && y + HEIGHT > barrier.getY() + barrier.getHeight()) {
                 position = new Point2D(x, barrier.getY() + barrier.getHeight());
                 velocityY = 0;
             }
         }
     }
+
+    @Override
     public void draw(javafx.scene.canvas.GraphicsContext gc) {
-        double x = position.getX();
-        double y = position.getY();
+        double x = getX();
+        double y = getY();
         if (role == Role.BLOCK) {
             gc.setFill(Color.RED);
         } else {
@@ -85,8 +102,13 @@ public class Lemming {
         position = position.add(0, velocityY * deltaTime);
 
         for (Lemming other : world.getLemmings()) {
-            if (other != this && other.getRole() == Role.BLOCK) {
-                checkCollisionWithLemming(other);
+            if (other != this) {
+                if (getBoundingBox().intersects(other.getBoundingBox())) {
+                    if (other.getRole() == Role.BLOCK) {
+                        checkCollisionWithLemming(other);
+                    }
+                    onCollision(other);
+                }
             }
         }
 
@@ -95,16 +117,13 @@ public class Lemming {
         }
     }
 
-
-    // Kontrola kolize s jiným lemmingem (funguje jako bariéra)
     private void checkCollisionWithLemming(Lemming other) {
-        double x = position.getX();
-        double y = position.getY();
+        double x = getX();
+        double y = getY();
         double ox = other.getX();
         double oy = other.getY();
         if (x < ox + WIDTH && x + WIDTH > ox &&
             y < oy + HEIGHT && y + HEIGHT > oy) {
-            // kolize z boku
             if (y + HEIGHT - 2 > oy && y < oy + HEIGHT - 2) {
                 changeDirection();
                 if (direction == 1) {
@@ -113,7 +132,6 @@ public class Lemming {
                     position = new Point2D(ox - WIDTH, y);
                 }
             }
-            // kolize shora (stejná logika jako s bariérou)
             if (velocityY < 0 && y < oy + HEIGHT && y + HEIGHT > oy + HEIGHT) {
                 position = new Point2D(x, oy + HEIGHT);
                 velocityY = 0;

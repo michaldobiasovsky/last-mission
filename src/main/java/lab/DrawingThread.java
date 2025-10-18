@@ -20,7 +20,6 @@ public class DrawingThread extends AnimationTimer {
     private boolean lastFrameXDirectionChanged = false;
     private boolean lastFrameYDirectionChanged = false;
 
-    // upravený konstruktor
     public DrawingThread(Canvas canvas, World world) {
         this.canvas = canvas;
         this.gc = canvas.getGraphicsContext2D();
