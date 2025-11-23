@@ -3,6 +3,7 @@ package lab;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -45,6 +46,7 @@ public class World {
         all.addAll(lemmings);
         all.addAll(barriers);
         all.addAll(coins);
+        all.sort(Comparator.comparingDouble(d -> ((HasBoundingBox) d).getY()));
         return all;
     }
 

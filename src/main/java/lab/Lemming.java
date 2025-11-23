@@ -9,9 +9,11 @@ public class Lemming extends Entity {
     public static final double HEIGHT = 20;
     private static final double GRAVITY = 400; // px/s^2
 
+    public static volatile double speedMultiplier = 1.0;
+
     private Role role;
 
-    private int direction; // 1 - vpravo, -1 - vlevo
+    private int direction; // 1 - right, -1 - left
     private double velocityY;
     private final double speedX;
 
@@ -39,7 +41,7 @@ public class Lemming extends Entity {
     }
 
     public void onCollision(Lemming other) {
-        System.out.println("kolize");
+        System.out.println("collision");
     }
 
     public int getDirection() { return direction; }
@@ -51,7 +53,33 @@ public class Lemming extends Entity {
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
 
-    public void checkCollision(Barrier barrier) {
+    public void becomeBlock() {
+        this.role = Role.BLOCK;
+        this.velocityY = 0;
+    }
+
+    public void buildStairs(World world, int steps) {
+        if (steps <= 0) return;
+        double baseX = getX();
+        double baseY = getY();
+        for (int i = 0; i < steps; i++) {
+            double xi = baseX + direction * (i + 1) * WIDTH;
+            double yi = baseY - i * HEIGHT;
+            boolean exists = false;
+            for (Barrier b : world.getBarriers()) {
+                if (Math.abs(b.getX() - xi) < 1e-6 && Math.abs(b.getY() - yi) < 1e-6) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                world.getBarriers().add(new Step(xi, yi));
+            }
+        }
+        becomeBlock();
+    }
+
+    public void checkCollisionWithBarrier(Barrier barrier) {
         double x = getX();
         double y = getY();
         if (x < barrier.getX() + barrier.getWidth() && x + WIDTH > barrier.getX() &&
@@ -97,7 +125,7 @@ public class Lemming extends Entity {
             velocityY = 0;
             return;
         }
-        move(speedX * deltaTime);
+        move(speedX * speedMultiplier * deltaTime);
         velocityY -= GRAVITY * deltaTime;
         position = position.add(0, velocityY * deltaTime);
 
@@ -113,7 +141,7 @@ public class Lemming extends Entity {
         }
 
         for (Barrier barrier : world.getBarriers()) {
-            checkCollision(barrier);
+            checkCollisionWithBarrier(barrier);
         }
     }
 

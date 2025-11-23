@@ -2,5 +2,7 @@ package lab;
 
 public enum Role {
     DEFAULT,
-    BLOCK
+    BLOCK,
+    BOMB,
+    BUILD
 }
