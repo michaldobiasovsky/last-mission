@@ -1,3 +1,4 @@
+// java
 package lab;
 
 import javafx.application.Application;
@@ -7,11 +8,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-/**
- * Class <b>App</b> - extends class Application and it is an entry point of the program
- *
- * @author Java I
- */
 public class App extends Application {
 
     private GameController gameController;
@@ -22,16 +18,13 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            // Construct a main window with a canvas.
-            FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/lab/gameWindow.fxml"));
-            Parent root = gameLoader.load();
-            gameController = gameLoader.getController();
+            FXMLLoader menuLoader = new FXMLLoader(getClass().getResource("/lab/mainMenu.fxml"));
+            Parent root = menuLoader.load();
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
             primaryStage.resizableProperty().set(false);
             primaryStage.setTitle("Lemmings");
             primaryStage.show();
-            // Exit program when main window is closed
             primaryStage.setOnCloseRequest(this::exitProgram);
         } catch (Exception e) {
             e.printStackTrace();
@@ -40,7 +33,9 @@ public class App extends Application {
 
     @Override
     public void stop() throws Exception {
-        gameController.stop();
+        if (gameController != null) {
+            gameController.stop();
+        }
         super.stop();
     }
 

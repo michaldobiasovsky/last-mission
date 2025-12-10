@@ -1,3 +1,5 @@
+// java
+// src/main/java/lab/World.java
 package lab;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -11,13 +13,15 @@ public class World {
 
     private final List<Lemming> lemmings = new ArrayList<>();
     private final List<Barrier> barriers = new ArrayList<>();
-    private final List<Coin> coins = new ArrayList<>();
+    private final List<Door> doors = new ArrayList<>();
 
+    // fronta požadavků na spawn
+    private final List<SpawnRequest> spawnRequests = new ArrayList<>();
+
+    /**
+     * Původní konstruktor zachován pro rychlé testy - dělá defaultní naplnění.
+     */
     public World(double width, double height) {
-        lemmings.add(new Lemming(50, 50));
-        lemmings.add(new Lemming(200, 50));
-        lemmings.add(new Lemming(100, 50));
-
         barriers.add(new Barrier(10, 0, 20, 200)); // levá bariéra
         barriers.add(new Barrier(0, 5, width / 2, 20)); // podlaha
 
@@ -25,8 +29,41 @@ public class World {
         for (int i = 0; i < 10; i++) {
             double x = 40 + rnd.nextDouble() * (width - 80);
             double y = 40 + rnd.nextDouble() * (height - 80);
-            coins.add(new Coin(x, y));
         }
+
+        doors.add(new Door(300, 20, DoorType.EXIT));
+        doors.add(new Door(20, 20, DoorType.ENTRY));
+    }
+
+    /**
+     * Soukromý konstruktor pro vytvoření prázdného světa (bez defaultních entit).
+     * Používat např. z továrních metod jako fromLevel.
+     */
+    private World() {
+        // nic nenaplňovat - seznamy jsou inicializovány při deklaraci
+    }
+
+    /**
+     * Vytvoří nový World přesně podle konfigurace Level.
+     * Bariéry a dveře jsou přidány ze seznamů v Level (shallow copy referencí).
+     * Naplánuje spawny podle level.getTotalLemmings() s výchozím intervalem 1s.
+     */
+    public static World fromLevel(Level level, double canvasWidth, double canvasHeight) {
+        World w = new World();
+        if (level == null) return w;
+
+        // Přidáme bariéry a dveře z levelu (ponecháme původní typy, např. Step)
+        w.getBarriers().addAll(level.getBarriers());
+        w.getDoors().addAll(level.getDoors());
+
+        // případně by šlo přidat mince nebo jiné entity z Levelu
+
+        // naplánuj spawny podle konfigurace levelu (interval lze udělat konfigurovatelný)
+        if (level.getTotalLemmings() > 0) {
+            w.spawnFromEntry(level.getTotalLemmings(), 1.0);
+        }
+
+        return w;
     }
 
     public List<Lemming> getLemmings() {
@@ -37,15 +74,34 @@ public class World {
         return barriers;
     }
 
-    public List<Coin> getCoins() {
-        return coins;
+    public List<Door> getDoors() {
+        return doors;
+    }
+
+    public void spawnFromEntry(int count, double intervalSeconds) {
+        Door entry = doors.stream().filter(d -> d.getType() == DoorType.ENTRY).findFirst().orElse(null);
+        if (entry == null || count <= 0 || intervalSeconds <= 0) return;
+        spawnRequests.add(new SpawnRequest(entry, count, intervalSeconds));
+    }
+
+    private static class SpawnRequest {
+        final Door door;
+        int remaining;
+        final double interval;
+        double acc = 0.0;
+
+        SpawnRequest(Door door, int remaining, double interval) {
+            this.door = door;
+            this.remaining = remaining;
+            this.interval = interval;
+        }
     }
 
     public List<Drawable> getDrawables() {
         List<Drawable> all = new ArrayList<>();
         all.addAll(lemmings);
         all.addAll(barriers);
-        all.addAll(coins);
+        all.addAll(doors);
         all.sort(Comparator.comparingDouble(d -> ((HasBoundingBox) d).getY()));
         return all;
     }
@@ -54,7 +110,7 @@ public class World {
         List<HasBoundingBox> all = new ArrayList<>();
         all.addAll(lemmings);
         all.addAll(barriers);
-        all.addAll(coins);
+        all.addAll(doors);
         return all;
     }
 
@@ -71,8 +127,44 @@ public class World {
     }
 
     public void simulate(double deltaTime) {
+        // zpracovat frontu spawnů (vytvoří nové lemmingy podle intervalu)
+        processSpawnRequests(deltaTime);
+
         for (Lemming l : lemmings) {
             l.simulate(deltaTime, this);
         }
+
+        List<Lemming> toRemove = new ArrayList<>();
+        for (Lemming l : getLemmings()) {
+            for (Door d : getDoors()) {
+                if (d.getType() == DoorType.EXIT && l.getBoundingBox().intersects(d.getBoundingBox())) {
+                    toRemove.add(l);
+                    break;
+                }
+            }
+        }
+        if (!toRemove.isEmpty()) {
+            getLemmings().removeAll(toRemove);
+        }
+    }
+
+    private void processSpawnRequests(double deltaTime) {
+        if (spawnRequests.isEmpty()) return;
+
+        List<SpawnRequest> finished = new ArrayList<>();
+        for (SpawnRequest req : spawnRequests) {
+            req.acc += deltaTime;
+            while (req.remaining > 0 && req.acc >= req.interval) {
+                req.acc -= req.interval;
+                double spawnX = req.door.getX() + (req.door.getWidth() - Lemming.WIDTH) / 2.0;
+                double spawnY = req.door.getY() + (req.door.getHeight() - Lemming.HEIGHT) / 2.0;
+                lemmings.add(new Lemming(spawnX, spawnY));
+                req.remaining--;
+            }
+            if (req.remaining <= 0) {
+                finished.add(req);
+            }
+        }
+        spawnRequests.removeAll(finished);
     }
 }

@@ -23,6 +23,10 @@ public class Barrier extends Entity {
         return height;
     }
 
+    public boolean isStep() {
+        return false;
+    }
+
     @Override
     public void draw(GraphicsContext gc) {
         gc.setFill(Color.BROWN);
