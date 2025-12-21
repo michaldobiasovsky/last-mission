@@ -1,11 +1,12 @@
+// java
 package lab;
 
-import javafx.event.ActionEvent;
+import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Slider;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import lab.score.Score;
@@ -13,140 +14,247 @@ import lab.score.ScoreException;
 import lab.score.ScoreRepository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GameController {
 
-    private int currentLevel = 1;
-    private long levelStartTime;
-    private List<Score> scores = new ArrayList<>();
-
-    @FXML private Slider angle;
-    @FXML private Slider speed;
     @FXML private Canvas canvas;
+
+    @FXML private Button blockBtn;
+    @FXML private Button buildBtn;
+    @FXML private Button killBtn;
+
+    @FXML private Label LemmingsCount;
+    @FXML private Label time;
+    @FXML private Label NeadedLemmings;
 
     private World world;
     private DrawingThread timer;
+    private AnimationTimer uiUpdater;
+
     private Role selectedRole = null;
 
-    @FXML
-    void block(ActionEvent event) {
-        selectedRole = Role.BLOCK;
-    }
+    private Level currentLevelObj;
+    private final Map<Role, Integer> abilityCounts = new HashMap<>();
+    private List<Score> scores = new ArrayList<>();
 
-    @FXML
-    void bomb(ActionEvent event) {
-        selectedRole = Role.BOMB;
-    }
-
-    @FXML
-    void build(ActionEvent event) {
-        selectedRole = Role.BUILD;
-    }
-
-    @FXML
-    void reset(ActionEvent event) {
-        onLevelCompleted();
-        if (timer != null) timer.stop();
-        world = new World(canvas.getWidth(), canvas.getHeight());
-        timer = new DrawingThread(canvas, world);
-        timer.start();
-        selectedRole = null;
-        startLevelTimer();
-    }
-
-    @FXML
-    void stop(ActionEvent event) {
-        stop();
-        Stage stage = (Stage) canvas.getScene().getWindow();
-        stage.close();
-    }
+    private long levelStartTime = 0;
+    private boolean levelFinished = false;
 
     @FXML
     void initialize() {
-        // NESPOUŠTĚT timer zde — čekat na startLevel nebo explicitní akci
         try {
             scores = ScoreRepository.load();
-        } catch (ScoreException ex) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("Loading problem");
-            alert.getDialogPane().setContentText(ex.getMessage());
-            alert.showAndWait();
+        } catch (ScoreException e) {
             scores = new ArrayList<>();
         }
-
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, this::handleCanvasClick);
+        updateAbilityButtons();
     }
 
-    private void handleCanvasClick(MouseEvent e) {
-        if (selectedRole == null || world == null) return;
-
-        double mx = e.getX();
-        double my = canvas.getHeight() - e.getY();
-
-        Lemming target = null;
-        for (Lemming l : world.getLemmings()) {
-            if (l.getBoundingBox().contains(mx, my)) {
-                target = l;
-                break;
-            }
-        }
-
-        if (target == null) {
-            selectedRole = null;
-            return;
-        }
-
-        switch (selectedRole) {
-            case BLOCK -> target.setRole(target.getRole() == Role.BLOCK ? Role.DEFAULT : Role.BLOCK);
-            case BOMB -> world.getLemmings().remove(target);
-            case BUILD -> target.buildStairs(world, 5);
-        }
-        selectedRole = null;
+    @FXML
+    void block(javafx.event.ActionEvent event) {
+        selectedRole = Role.BLOCK;
+        updateAbilityButtons();
     }
 
-    private void startLevelTimer() {
-        levelStartTime = System.currentTimeMillis();
+    @FXML
+    void build(javafx.event.ActionEvent event) {
+        selectedRole = Role.BUILD;
+        updateAbilityButtons();
+    }
+
+    @FXML
+    void kill(javafx.event.ActionEvent event) {
+        selectedRole = Role.KILL;
+        updateAbilityButtons();
+    }
+
+    @FXML
+    void reset(javafx.event.ActionEvent event) {
+        if (currentLevelObj != null) {
+            startLevel(currentLevelObj);
+        }
+    }
+
+    @FXML
+    void stop(javafx.event.ActionEvent event) {
+        if (timer != null) timer.stop();
+        if (uiUpdater != null) uiUpdater.stop();
+        Stage stage = (Stage) canvas.getScene().getWindow();
+        if (stage != null) stage.close();
+    }
+
+    // \- přetížení pro volání z App.stop()
+    public void stop() {
+        if (timer != null) timer.stop();
+        if (uiUpdater != null) uiUpdater.stop();
+        Stage stage = (Stage) canvas.getScene().getWindow();
+        if (stage != null) stage.close();
     }
 
     public void startLevel(Level level) {
-        if (level == null) {
-            // fallback: spustit defaultní svět
-            world = new World(canvas.getWidth(), canvas.getHeight());
+        if (timer != null) timer.stop();
+        if (uiUpdater != null) uiUpdater.stop();
+
+        currentLevelObj = level;
+        levelFinished = false;
+
+        world = (level != null)
+            ? World.fromLevel(level, canvas.getWidth(), canvas.getHeight())
+            : new World(canvas.getWidth(), canvas.getHeight());
+
+        abilityCounts.clear();
+        if (level != null && level.getAbilityCounts() != null) {
+            abilityCounts.putAll(level.getAbilityCounts());
         } else {
-            currentLevel = level.getId();
-            world = World.fromLevel(level, canvas.getWidth(), canvas.getHeight());
+            abilityCounts.put(Role.BLOCK, 0);
+            abilityCounts.put(Role.BUILD, 0);
+            abilityCounts.put(Role.KILL, 0);
         }
 
-        if (timer != null) timer.stop();
+        updateAbilityButtons();
+
         timer = new DrawingThread(canvas, world);
         timer.start();
-        startLevelTimer();
+
+        levelStartTime = System.currentTimeMillis();
+        startUiUpdater();
     }
 
-    public void onLevelCompleted() {
-        long time = System.currentTimeMillis() - levelStartTime;
-        Score existing = null;
-        for (Score s : scores) {
-            if (s.getLevel() == currentLevel) {
-                existing = s;
+    private void handleCanvasClick(MouseEvent e) {
+        if (world == null || selectedRole == null) return;
+        double clickX = e.getX();
+        double clickY = canvas.getHeight() - e.getY();
+
+        Lemming target = world.getLemmings().stream()
+            .filter(l -> l.getBoundingBox().contains(clickX, clickY))
+            .findFirst().orElse(null);
+        if (target == null) return;
+
+        switch (selectedRole) {
+            case BLOCK:
+                if (decrementAbility(Role.BLOCK)) {
+                    target.becomeBlock();
+                }
                 break;
-            }
+            case BUILD:
+                if (decrementAbility(Role.BUILD)) {
+                    target.buildStairs(world, 3);
+                }
+                break;
+            case KILL:
+                if (decrementAbility(Role.KILL)) {
+                    world.getLemmings().remove(target);
+                }
+                break;
+            default:
+                break;
         }
-        if (existing != null) scores.remove(existing);
-        scores.add(new Score(currentLevel, true, time));
+        updateAbilityButtons();
+    }
+
+    private boolean decrementAbility(Role r) {
+        Integer cnt = abilityCounts.getOrDefault(r, 0);
+        if (cnt == null || cnt <= 0) return false;
+        abilityCounts.put(r, cnt - 1);
+        return true;
+    }
+
+    private void startUiUpdater() {
+        uiUpdater = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                updateUi();
+            }
+        };
+        uiUpdater.start();
+    }
+
+    private void updateUi() {
+        int onTrack = (world != null) ? world.getLemmings().size() : 0;
+        LemmingsCount.setText("Na trati: " + onTrack);
+
+        long elapsed = (levelStartTime > 0) ? (System.currentTimeMillis() - levelStartTime) : 0;
+        time.setText("Čas: " + formatTime(elapsed));
+
+        int needed = (currentLevelObj != null) ? currentLevelObj.getNeededLemmings() : 0;
+        int exited = (world != null) ? world.getExitedCount() : 0;
+        NeadedLemmings.setText("Cíl: " + exited + "/" + needed);
+
+        // \- automatické dokončení levelu při splnění cíle
+        if (!levelFinished && needed > 0 && exited >= needed) {
+            finishLevel();
+        }
+    }
+
+    private String formatTime(long ms) {
+        long sec = ms / 1000;
+        long min = sec / 60;
+        long rem = sec % 60;
+        return String.format("%02d:%02d", min, rem);
+    }
+
+    private void updateAbilityButtons() {
+        updateButtonForRole(Role.BLOCK, blockBtn, "Block");
+        updateButtonForRole(Role.BUILD, buildBtn, "Build");
+        updateButtonForRole(Role.KILL, killBtn, "Kill");
+    }
+
+    private void updateButtonForRole(Role r, Button btn, String baseText) {
+        int cnt = abilityCounts.getOrDefault(r, 0);
+        btn.setText(baseText + " (" + cnt + ")");
+        btn.setDisable(cnt <= 0);
+        btn.setStyle((selectedRole == r) ? "-fx-background-color: #00C853;" : "-fx-background-color: RED;");
+    }
+
+    private void onLevelCompleted() {
+        long elapsed = System.currentTimeMillis() - levelStartTime;
+        int lvlId = (currentLevelObj != null) ? currentLevelObj.getId() : 0;
+
+        scores.removeIf(s -> s.getLevel() == lvlId);
+        scores.add(new Score(lvlId, true, elapsed));
 
         try {
             ScoreRepository.save(scores);
-        } catch (ScoreException ex) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("Storing problem");
-            alert.getDialogPane().setContentText(ex.getMessage());
-            alert.showAndWait();
+        } catch (ScoreException e) {
+            // ignore
         }
     }
 
-    public void stop() {
+    private void finishLevel() {
+        if (levelFinished) return;
+        levelFinished = true;
+
         if (timer != null) timer.stop();
+        if (uiUpdater != null) uiUpdater.stop();
+
+        onLevelCompleted();
+
+        javafx.application.Platform.runLater(() -> {
+            long timeTaken = System.currentTimeMillis() - levelStartTime;
+            String timeStr = formatTime(timeTaken);
+
+            javafx.scene.control.ButtonType retryButton = new javafx.scene.control.ButtonType("Zopakovat");
+            javafx.scene.control.ButtonType closeButton = new javafx.scene.control.ButtonType("Zavřít");
+
+            Alert done = new Alert(Alert.AlertType.CONFIRMATION);
+            done.setTitle("Level dokončen");
+            done.setHeaderText("Gratulace! Level byl dokončen.");
+            done.setContentText("Váš čas: " + timeStr + "\nCo chcete dělat dále?");
+            done.getButtonTypes().setAll(retryButton, closeButton);
+
+            java.util.Optional<javafx.scene.control.ButtonType> result = done.showAndWait();
+
+            if (result.isPresent() && result.get() == retryButton) {
+                levelFinished = false;
+                startLevel(currentLevelObj);
+            } else {
+                Stage stage = (Stage) canvas.getScene().getWindow();
+                if (stage != null) stage.close();
+            }
+        });
     }
 }

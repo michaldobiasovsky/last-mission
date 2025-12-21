@@ -16,7 +16,6 @@ public class Lemming extends Entity {
     private double velocityY;
     private final double speedX;
 
-    // Per-instance cooldown v sekundách simulace
     private double directionCooldown = 0;
     private static final double DIRECTION_COOLDOWN_SEC = 0.15;
 
@@ -73,13 +72,10 @@ public class Lemming extends Entity {
             boolean exists = world.getBarriers().stream()
                 .anyMatch(b -> Math.abs(b.getX() - xi) < WIDTH && Math.abs(b.getY() - yi) < HEIGHT * 0.5);
             if (!exists) {
-                // Předat směr schodů (stejný jako směr lemminga při stavbě)
                 world.getBarriers().add(new Step(xi, yi, direction));
             }
         }
     }
-
-
 
     private boolean checkBarrierAt(World world, double bx, double by) {
         return world.getBarriers().stream()
@@ -100,22 +96,18 @@ public class Lemming extends Entity {
         double barrierLeft = barrier.getX();
         double barrierRight = barrier.getX() + barrier.getWidth();
 
-        // SCHODY: lemming vyleze jen když jde ve správném směru
         if (barrier.isStep()) {
             Step step = (Step) barrier;
             int stepDir = step.getStepDirection();
 
-            // Lemming může vylézt pouze když jde STEJNÝM směrem jako schody
             boolean canClimb = (direction == stepDir);
 
             if (canClimb && y < barrierTop && y + HEIGHT > barrierBottom) {
-                // Posunout lemminga NA vrchol schodu
                 position = new Point2D(x, barrierTop);
                 velocityY = 0;
                 return;
             }
 
-            // Padání shora — stání na schodu
             if (velocityY <= 0) {
                 double overlap = barrierTop - y;
                 if (overlap > 0 && overlap < HEIGHT * 0.6) {
@@ -125,7 +117,6 @@ public class Lemming extends Entity {
                 }
             }
 
-            // Jde opačným směrem — schod funguje jako zeď
             if (!canClimb) {
                 double frontX = direction == 1 ? x + WIDTH : x;
                 boolean hitsWall = (direction == 1 && frontX >= barrierLeft && frontX <= barrierLeft + 10)
@@ -143,7 +134,6 @@ public class Lemming extends Entity {
             return;
         }
 
-        // BĚŽNÁ BARIÉRA: stání na ní
         if (velocityY <= 0) {
             double overlap = barrierTop - y;
             if (overlap > 0 && overlap < HEIGHT * 0.6) {
@@ -153,7 +143,6 @@ public class Lemming extends Entity {
             }
         }
 
-        // BOČNÍ KOLIZE pro ne-schody
         double frontX = direction == 1 ? x + WIDTH : x;
         boolean hitsWall = (direction == 1 && frontX >= barrierLeft && frontX <= barrierLeft + 10)
             || (direction == -1 && frontX <= barrierRight && frontX >= barrierRight - 10);
@@ -168,8 +157,6 @@ public class Lemming extends Entity {
         }
     }
 
-
-
     private void checkCollisionWithLemming(Lemming other) {
         if (other.getRole() != Role.BLOCK) return;
 
@@ -182,7 +169,6 @@ public class Lemming extends Entity {
         boolean overlapY = y < oy + HEIGHT && y + HEIGHT > oy;
         if (!overlapX || !overlapY) return;
 
-        // Boční kolize
         if (y + HEIGHT - 2 > oy && y < oy + HEIGHT - 2) {
             changeDirection();
             if (direction == 1) {
@@ -192,7 +178,6 @@ public class Lemming extends Entity {
             }
         }
 
-        // Stání na blokujícím lemmingovi
         if (velocityY <= 0 && y < oy + HEIGHT && y + HEIGHT > oy + HEIGHT) {
             position = new Point2D(x, oy + HEIGHT);
             velocityY = 0;

@@ -13,7 +13,7 @@ public final class LevelRepository {
     public static List<Level> loadDefaults() {
         List<Level> levels = new ArrayList<>();
 
-//level 1
+        // level 1
         List<Barrier> barriers1 = new ArrayList<>();
         barriers1.add(new Barrier(0, 10, 800, 20)); // floor
         barriers1.add(new Barrier(200, 500, 100, 20)); // platforma
@@ -23,9 +23,9 @@ public final class LevelRepository {
         doors1.add(new Door(700, 20, DoorType.EXIT));
 
         Map<Role, Integer> abilities1 = new HashMap<>();
-        abilities1.put(Role.BLOCK, 3);
+        abilities1.put(Role.BLOCK, 3); // obnoveno BLOCK
         abilities1.put(Role.BUILD, 2);
-        abilities1.put(Role.BOMB, 1);
+        abilities1.put(Role.KILL, 1); // BOMB -> KILL
 
         Level l1 = new Level(
             1,
@@ -47,7 +47,7 @@ public final class LevelRepository {
         Map<Role, Integer> abilities2 = new HashMap<>();
         abilities2.put(Role.BLOCK, 1);
         abilities2.put(Role.BUILD, 4);
-        abilities2.put(Role.BOMB, 0);
+        abilities2.put(Role.KILL, 0);
 
         Level l2 = new Level(2, "Stairs", 15, 8, new Point2D(40, 500), barriers2, new ArrayList<>(), abilities2);
         levels.add(l2);

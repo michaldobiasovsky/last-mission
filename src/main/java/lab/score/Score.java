@@ -1,5 +1,7 @@
 package lab.score;
 
+import java.util.Objects;
+
 public class Score {
 
     private final int level;
@@ -24,6 +26,14 @@ public class Score {
         return timeMillis;
     }
 
+    public long getTime() {
+        return this.timeMillis;
+    }
+
+    public String toCsvLine() {
+        return String.format("%d;%b;%d", level, unlocked, timeMillis);
+    }
+
     public static Score fromCsvLine(String line, int lineNumber) throws ScoreException {
         String[] parts = line.split(";");
         if (parts.length != 3) {
@@ -34,12 +44,28 @@ public class Score {
             boolean unlocked = Boolean.parseBoolean(parts[1].trim());
             long time = Long.parseLong(parts[2].trim());
             return new Score(lvl, unlocked, time);
-        } catch (NumberFormatException e) {
-            throw new ScoreException("Neplatná čísla na řádku " + lineNumber + ": " + line, e);
+        } catch (NumberFormatException ex) {
+            throw new ScoreException("Chyba parsování na řádku " + lineNumber + ": " + line, ex);
         }
     }
 
-    public String toCsvLine() {
-        return level + ";" + unlocked + ";" + timeMillis;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Score)) return false;
+        Score score = (Score) o;
+        return level == score.level &&
+            unlocked == score.unlocked &&
+            timeMillis == score.timeMillis;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(level, unlocked, timeMillis);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Score{level=%d, unlocked=%b, timeMillis=%d}", level, unlocked, timeMillis);
     }
 }

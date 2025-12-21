@@ -10,8 +10,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import lab.score.Score;
+import lab.score.ScoreException;
+import lab.score.ScoreRepository;
 
 import java.io.IOException;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 public class LevelDetailsController {
 
@@ -20,6 +26,7 @@ public class LevelDetailsController {
     @FXML private Label neededLabel;
     @FXML private Label entryLabel;
     @FXML private Label abilitiesLabel;
+    @FXML private Label bestTimeLabel;
     @FXML private Button playButton;
 
     private Level selectedLevel;
@@ -46,7 +53,25 @@ public class LevelDetailsController {
             lvl.getAbilityCounts().forEach((r, c) -> sb.append(r).append(": ").append(c).append("  "));
         }
         abilitiesLabel.setText("Abilities: " + sb);
+
+        bestTimeLabel.setText("Best time: -");
+        try {
+            List<Score> scores = ScoreRepository.load();
+            Optional<Score> best = scores.stream()
+                .filter(s -> s.getLevel() == lvl.getId() && s.isUnlocked())
+                .min(Comparator.comparingLong(Score::getTimeMillis));
+            best.ifPresent(s -> bestTimeLabel.setText("Best time: " + formatTime(s.getTimeMillis())));
+        } catch (ScoreException e) {
+        }
+
         playButton.setDisable(false);
+    }
+
+    private String formatTime(long ms) {
+        long sec = ms / 1000;
+        long min = sec / 60;
+        long rem = sec % 60;
+        return String.format("%02d:%02d", min, rem);
     }
 
     @FXML
@@ -68,18 +93,14 @@ public class LevelDetailsController {
             gameStage.setScene(new Scene(gameRoot));
             gameStage.setResizable(false);
 
-            // Uložit reference před zavřením
             Stage detailsStage = (Stage) playButton.getScene().getWindow();
             Stage selectionStage = ownerStage;
 
-            // Zobrazit herní okno
             gameStage.show();
 
-            // Spustit level až po renderování scény
             final Level lvl = selectedLevel;
             Platform.runLater(() -> gc.startLevel(lvl));
 
-            // Zavřít selection a details
             if (selectionStage != null) selectionStage.close();
             detailsStage.close();
 

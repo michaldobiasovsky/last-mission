@@ -1,52 +1,50 @@
-// java
-// src/main/java/lab/MainMenuController.java
 package lab;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.application.Platform;
+import lab.score.Score;
+import lab.score.ScoreException;
+import lab.score.ScoreRepository;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class MainMenuController {
 
-    @FXML
-    private Button startButton;
-
-    @FXML
-    private Button exitButton;
-
-    @FXML
-    private Button levelsButton;
-
-    @FXML
-    private Button loginButton;
+    @FXML private Button startButton;
+    @FXML private Button exitButton;
+    @FXML private Button levelsButton;
+    @FXML private Button loginButton;
+    @FXML private Button resetScoreButton;
 
     @FXML
     void startGame(ActionEvent event) {
+        Level levelToStart = chooseLevelToStart();
         try {
-            if (!Protection.isVerified()) {
-                System.out.println("Uživatel není přihlášen, pokračuje se bez zpomalení.");
-            }
-
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/lab/gameWindow.fxml"));
             Parent gameRoot = loader.load();
-            Stage stage = (Stage) startButton.getScene().getWindow();
-            Scene scene = new Scene(gameRoot);
-            stage.setScene(scene);
-            stage.setResizable(false);
-            stage.setTitle("Lemmings");
-        } catch (IOException e) {
-            e.printStackTrace();
+            GameController gc = loader.getController();
+
+            Stage gameStage = new Stage();
+            gameStage.setTitle("Lemmings");
+            gameStage.setScene(new Scene(gameRoot));
+            gameStage.setResizable(false);
+            gameStage.show();
+
+            final Level lvl = levelToStart;
+            Platform.runLater(() -> gc.startLevel(lvl));
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
-
 
     @FXML
     void showLevels(ActionEvent event) {
@@ -54,30 +52,35 @@ public class MainMenuController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/lab/levelsSelection.fxml"));
             Parent root = loader.load();
             Stage stage = new Stage();
-            stage.initOwner(startButton.getScene().getWindow());
-            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setTitle("Levels");
             stage.setScene(new Scene(root));
-            stage.setTitle("Select Level");
             stage.setResizable(false);
             stage.showAndWait();
-        } catch (IOException e) {
-            e.printStackTrace();
+            updateStartButtonText();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
-
-
 
     @FXML
     void login(ActionEvent event) {
         Protection.checkAndApply(success -> {
-            if (success) {
+            if (Protection.isVerified()) {
                 loginButton.setText("Přihlášen: " + Protection.getVerifiedName().orElse(""));
-                startButton.setDisable(false);
             } else {
                 loginButton.setText("Přihlásit");
-                startButton.setDisable(false);
             }
         });
+    }
+
+    @FXML
+    void resetScores(ActionEvent event) {
+        try {
+            ScoreRepository.save(new ArrayList<>());
+            updateStartButtonText();
+        } catch (ScoreException e) {
+            // ignore
+        }
     }
 
     @FXML
@@ -87,7 +90,7 @@ public class MainMenuController {
 
     @FXML
     void initialize() {
-        assert exitButton != null : "fx:id=\"exitButton1\" was not injected: check your FXML file 'mainMenu.fxml'.";
+        assert exitButton != null : "fx:id=\"exitButton\" was not injected: check your FXML file 'mainMenu.fxml'.";
         assert loginButton != null : "fx:id=\"loginButton\" was not injected: check your FXML file 'mainMenu.fxml'.";
         assert startButton != null : "fx:id=\"startButton\" was not injected: check your FXML file 'mainMenu.fxml'.";
 
@@ -98,5 +101,40 @@ public class MainMenuController {
             loginButton.setText("Přihlásit");
             startButton.setDisable(false);
         }
+        updateStartButtonText();
+    }
+
+    private void updateStartButtonText() {
+        boolean anyWon = hasAnyWonLevel();
+        startButton.setText(anyWon ? "Continue" : "New game");
+    }
+
+    private boolean hasAnyWonLevel() {
+        try {
+            List<Score> scores = ScoreRepository.load();
+            return scores.stream().anyMatch(Score::isUnlocked);
+        } catch (ScoreException e) {
+            return false;
+        }
+    }
+
+    private Level chooseLevelToStart() {
+        List<Level> levels = LevelRepository.loadDefaults();
+        List<Score> scores;
+        try {
+            scores = ScoreRepository.load();
+        } catch (ScoreException e) {
+            scores = new ArrayList<>();
+        }
+
+        for (Level lvl : levels) {
+            boolean won = scores.stream().anyMatch(s -> s.getLevel() == lvl.getId() && s.isUnlocked());
+            if (!won) {
+                return lvl;
+            }
+        }
+        return levels.stream()
+            .max(Comparator.comparingInt(Level::getId))
+            .orElseGet(() -> levels.isEmpty() ? null : levels.get(levels.size() - 1));
     }
 }

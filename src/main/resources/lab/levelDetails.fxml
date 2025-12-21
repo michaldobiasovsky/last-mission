@@ -16,6 +16,7 @@
         <Label fx:id="neededLabel" text="Needed: -" />
         <Label fx:id="entryLabel" text="Entry: -" />
         <Label fx:id="abilitiesLabel" text="Abilities: -" wrapText="true" />
+        <Label fx:id="bestTimeLabel" text="Best time: -" />
         <HBox spacing="8" style="-fx-padding: 10 0 0 0;">
             <children>
                 <Button fx:id="playButton" text="Play" onAction="#onPlay" disable="true" />

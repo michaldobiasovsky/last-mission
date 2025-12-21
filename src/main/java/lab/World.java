@@ -1,5 +1,3 @@
-// java
-// src/main/java/lab/World.java
 package lab;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -15,12 +13,10 @@ public class World {
     private final List<Barrier> barriers = new ArrayList<>();
     private final List<Door> doors = new ArrayList<>();
 
-    // fronta požadavků na spawn
     private final List<SpawnRequest> spawnRequests = new ArrayList<>();
 
-    /**
-     * Původní konstruktor zachován pro rychlé testy - dělá defaultní naplnění.
-     */
+    private int exitedCount = 0;
+
     public World(double width, double height) {
         barriers.add(new Barrier(10, 0, 20, 200)); // levá bariéra
         barriers.add(new Barrier(0, 5, width / 2, 20)); // podlaha
@@ -35,30 +31,16 @@ public class World {
         doors.add(new Door(20, 20, DoorType.ENTRY));
     }
 
-    /**
-     * Soukromý konstruktor pro vytvoření prázdného světa (bez defaultních entit).
-     * Používat např. z továrních metod jako fromLevel.
-     */
     private World() {
-        // nic nenaplňovat - seznamy jsou inicializovány při deklaraci
     }
 
-    /**
-     * Vytvoří nový World přesně podle konfigurace Level.
-     * Bariéry a dveře jsou přidány ze seznamů v Level (shallow copy referencí).
-     * Naplánuje spawny podle level.getTotalLemmings() s výchozím intervalem 1s.
-     */
     public static World fromLevel(Level level, double canvasWidth, double canvasHeight) {
         World w = new World();
         if (level == null) return w;
 
-        // Přidáme bariéry a dveře z levelu (ponecháme původní typy, např. Step)
         w.getBarriers().addAll(level.getBarriers());
         w.getDoors().addAll(level.getDoors());
 
-        // případně by šlo přidat mince nebo jiné entity z Levelu
-
-        // naplánuj spawny podle konfigurace levelu (interval lze udělat konfigurovatelný)
         if (level.getTotalLemmings() > 0) {
             w.spawnFromEntry(level.getTotalLemmings(), 1.0);
         }
@@ -66,17 +48,11 @@ public class World {
         return w;
     }
 
-    public List<Lemming> getLemmings() {
-        return lemmings;
-    }
+    public List<Lemming> getLemmings() { return lemmings; }
+    public List<Barrier> getBarriers() { return barriers; }
+    public List<Door> getDoors() { return doors; }
 
-    public List<Barrier> getBarriers() {
-        return barriers;
-    }
-
-    public List<Door> getDoors() {
-        return doors;
-    }
+    public int getExitedCount() { return exitedCount; }
 
     public void spawnFromEntry(int count, double intervalSeconds) {
         Door entry = doors.stream().filter(d -> d.getType() == DoorType.ENTRY).findFirst().orElse(null);
@@ -118,16 +94,13 @@ public class World {
         gc.save();
         gc.scale(1, -1);
         gc.translate(0, -gc.getCanvas().getHeight());
-
         for (Drawable d : getDrawables()) {
             d.draw(gc);
         }
-
         gc.restore();
     }
 
     public void simulate(double deltaTime) {
-        // zpracovat frontu spawnů (vytvoří nové lemmingy podle intervalu)
         processSpawnRequests(deltaTime);
 
         for (Lemming l : lemmings) {
@@ -144,6 +117,7 @@ public class World {
             }
         }
         if (!toRemove.isEmpty()) {
+            exitedCount += toRemove.size(); // \- inkrementace počitadla při průchodu EXITem
             getLemmings().removeAll(toRemove);
         }
     }
