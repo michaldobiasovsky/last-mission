@@ -58,8 +58,11 @@ public class GameController {
     @FXML
     void stop(ActionEvent event) {
         stop();
-        Stage stage = (Stage) canvas.getScene().getWindow();
-        stage.close();
+        try {
+            Navigation.loadScene("/lab/mainMenu.fxml");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

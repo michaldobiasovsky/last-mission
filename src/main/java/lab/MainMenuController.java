@@ -4,12 +4,7 @@ package lab;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 import javafx.application.Platform;
 
 import java.io.IOException;
@@ -35,13 +30,7 @@ public class MainMenuController {
                 System.out.println("Uživatel není přihlášen, pokračuje se bez zpomalení.");
             }
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/lab/gameWindow.fxml"));
-            Parent gameRoot = loader.load();
-            Stage stage = (Stage) startButton.getScene().getWindow();
-            Scene scene = new Scene(gameRoot);
-            stage.setScene(scene);
-            stage.setResizable(false);
-            stage.setTitle("Lemmings");
+            Navigation.loadScene("/lab/gameWindow.fxml");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -51,15 +40,7 @@ public class MainMenuController {
     @FXML
     void showLevels(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/lab/levelsSelection.fxml"));
-            Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.initOwner(startButton.getScene().getWindow());
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setScene(new Scene(root));
-            stage.setTitle("Select Level");
-            stage.setResizable(false);
-            stage.showAndWait();
+            Navigation.loadScene("/lab/levelsSelection.fxml");
         } catch (IOException e) {
             e.printStackTrace();
         }

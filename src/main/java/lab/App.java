@@ -10,7 +10,6 @@ import javafx.stage.WindowEvent;
 
 public class App extends Application {
 
-    private GameController gameController;
     public static void main(String[] args) {
         launch(args);
     }
@@ -18,9 +17,10 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
+            Navigation.setPrimaryStage(primaryStage);
             FXMLLoader menuLoader = new FXMLLoader(getClass().getResource("/lab/mainMenu.fxml"));
             Parent root = menuLoader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, 800, 600);
             primaryStage.setScene(scene);
             primaryStage.resizableProperty().set(false);
             primaryStage.setTitle("Lemmings");
@@ -33,8 +33,9 @@ public class App extends Application {
 
     @Override
     public void stop() throws Exception {
-        if (gameController != null) {
-            gameController.stop();
+        GameController gc = Navigation.getCurrentGameController();
+        if (gc != null) {
+            gc.stop();
         }
         super.stop();
     }

@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lab.LevelsController">
+<BorderPane prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: #2a5298;" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lab.LevelsController">
     <center>
         <ScrollPane fitToWidth="true" fitToHeight="true">
             <content>

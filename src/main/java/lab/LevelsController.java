@@ -5,10 +5,9 @@ package lab;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -25,7 +24,6 @@ public class LevelsController {
         int cols = 4;
         int row = 0;
         int col = 0;
-        Stage selectionStage = null;
         for (Level lvl : levels) {
             Button b = new Button(String.valueOf(lvl.getId()));
             b.setPrefSize(60, 60);
@@ -34,17 +32,12 @@ public class LevelsController {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/lab/levelDetails.fxml"));
                     Parent root = loader.load();
                     LevelDetailsController ctrl = loader.getController();
-                    // předání levelu a owner stage (selection)
-                    Stage detailsStage = new Stage();
-                    Stage owner = (Stage) grid.getScene().getWindow();
-                    ctrl.setOwnerStage(owner);
                     ctrl.setLevel(lvl);
-                    detailsStage.initOwner(owner);
-                    detailsStage.initModality(Modality.WINDOW_MODAL);
-                    detailsStage.setTitle("Level " + lvl.getId());
-                    detailsStage.setScene(new javafx.scene.Scene(root));
-                    detailsStage.setResizable(false);
-                    detailsStage.show();
+                    
+                    // Replace scene instead of opening new window
+                    Stage stage = Navigation.getPrimaryStage();
+                    Scene scene = new Scene(root, 800, 600);
+                    stage.setScene(scene);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
@@ -60,7 +53,10 @@ public class LevelsController {
 
     @FXML
     private void onClose() {
-        Stage stage = (Stage) grid.getScene().getWindow();
-        stage.close();
+        try {
+            Navigation.loadScene("/lab/mainMenu.fxml");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

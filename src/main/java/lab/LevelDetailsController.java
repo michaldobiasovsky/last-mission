@@ -1,15 +1,8 @@
 package lab;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 
 import java.io.IOException;
 
@@ -23,11 +16,6 @@ public class LevelDetailsController {
     @FXML private Button playButton;
 
     private Level selectedLevel;
-    private Stage ownerStage;
-
-    public void setOwnerStage(Stage owner) {
-        this.ownerStage = owner;
-    }
 
     public void setLevel(Level lvl) {
         this.selectedLevel = lvl;
@@ -51,7 +39,11 @@ public class LevelDetailsController {
 
     @FXML
     private void onBack() {
-        ((Stage) playButton.getScene().getWindow()).close();
+        try {
+            Navigation.loadScene("/lab/levelsSelection.fxml");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -59,36 +51,9 @@ public class LevelDetailsController {
         if (selectedLevel == null) return;
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/lab/gameWindow.fxml"));
-            Parent gameRoot = loader.load();
-            GameController gc = loader.getController();
-
-            Stage gameStage = new Stage();
-            gameStage.setTitle("Lemmings - Level " + selectedLevel.getId());
-            gameStage.setScene(new Scene(gameRoot));
-            gameStage.setResizable(false);
-
-            // Uložit reference před zavřením
-            Stage detailsStage = (Stage) playButton.getScene().getWindow();
-            Stage selectionStage = ownerStage;
-
-            // Zobrazit herní okno
-            gameStage.show();
-
-            // Spustit level až po renderování scény
-            final Level lvl = selectedLevel;
-            Platform.runLater(() -> gc.startLevel(lvl));
-
-            // Zavřít selection a details
-            if (selectionStage != null) selectionStage.close();
-            detailsStage.close();
-
+            Navigation.loadGameScene(selectedLevel);
         } catch (IOException ex) {
             ex.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText("Chyba");
-            alert.setContentText(ex.getMessage());
-            alert.showAndWait();
         }
     }
 }
