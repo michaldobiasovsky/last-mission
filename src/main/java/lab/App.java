@@ -15,9 +15,8 @@ import java.net.URL;
 
 public class App extends Application {
 
-    // Tyto rozměry nyní budou platit pro VNITŘNÍ obsah okna (Canvas/Scénu)
-    public static final double APP_WIDTH = 1025;
-    public static final double APP_HEIGHT = 770;
+    public static final double APP_WIDTH = 1024;
+    public static final double APP_HEIGHT = 768;
 
     private static Stage primaryStage;
     private static MediaPlayer musicPlayer;

@@ -3,17 +3,11 @@ package lab;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
-import javafx.stage.Stage;
 import lab.score.Score;
 import lab.score.ScoreException;
 import lab.score.ScoreRepository;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -29,21 +23,9 @@ public class MainMenuController {
     @FXML
     void startGame(ActionEvent event) {
         Level levelToStart = chooseLevelToStart();
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/lab/gameWindow.fxml"));
-            Parent gameRoot = loader.load();
-            GameController gc = loader.getController();
 
-            Stage gameStage = new Stage();
-            gameStage.setTitle("Lemmings");
-            gameStage.setScene(new Scene(gameRoot));
-            gameStage.setResizable(false);
-            gameStage.show();
-
-            final Level lvl = levelToStart;
-            Platform.runLater(() -> gc.startLevel(lvl));
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        if (levelToStart != null) {
+            App.showGame(levelToStart);
         }
     }
 
@@ -63,7 +45,6 @@ public class MainMenuController {
         });
     }
 
-
     @FXML
     void resetScores(ActionEvent event) {
         try {
@@ -77,6 +58,7 @@ public class MainMenuController {
     @FXML
     void exitApp(ActionEvent event) {
         Platform.exit();
+        System.exit(0);
     }
 
     @FXML
@@ -124,6 +106,7 @@ public class MainMenuController {
                 return lvl;
             }
         }
+
         return levels.stream()
             .max(Comparator.comparingInt(Level::getId))
             .orElseGet(() -> levels.isEmpty() ? null : levels.get(levels.size() - 1));

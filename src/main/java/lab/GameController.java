@@ -132,7 +132,7 @@ public class GameController implements StageAware {
     private void applyLevelBackground(Level level) {
         if (root == null) return;
 
-        String imagePath = "/lab/intro.png";
+        String imagePath = "/lab/level1.png";
 
         if (level != null && level.getBackgroundImagePath() != null) {
             imagePath = level.getBackgroundImagePath();

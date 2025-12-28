@@ -7,7 +7,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
+import lab.score.Score;
+import lab.score.ScoreException;
+import lab.score.ScoreRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +32,8 @@ public class LevelsController implements StageAware {
     private List<Level> levels;
     private Level selected;
 
+    private List<Score> scores;
+
     @Override
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -36,13 +42,34 @@ public class LevelsController implements StageAware {
     @FXML
     public void initialize() {
         levels = LevelRepository.loadDefaults();
+
+        try {
+            scores = ScoreRepository.load();
+        } catch (ScoreException e) {
+            scores = new ArrayList<>();
+        }
+
         levelList.setItems(FXCollections.observableArrayList(levels));
 
         levelList.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(Level item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty || item == null ? null : (item.getId() + " - " + item.getName()));
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    boolean isWon = isLevelWon(item.getId());
+                    String text = item.getId() + " - " + item.getName();
+
+                    if (isWon) {
+                        text += " (Completed)";
+                        setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-text-fill: black;");
+                    }
+                    setText(text);
+                }
             }
         });
 
@@ -91,8 +118,32 @@ public class LevelsController implements StageAware {
         }
 
         if (bestTimeLabel != null) {
-            bestTimeLabel.setText("Best time: -");
+            Score s = getScoreForLevel(lvl.getId());
+            if (s != null && s.isUnlocked()) {
+                bestTimeLabel.setText("Best time: " + formatTime(s.getTime()));
+            } else {
+                bestTimeLabel.setText("Best time: -");
+            }
         }
+    }
+
+    private boolean isLevelWon(int levelId) {
+        return scores.stream()
+            .anyMatch(s -> s.getLevel() == levelId && s.isUnlocked());
+    }
+
+    private Score getScoreForLevel(int levelId) {
+        return scores.stream()
+            .filter(s -> s.getLevel() == levelId && s.isUnlocked())
+            .findFirst()
+            .orElse(null);
+    }
+
+    private String formatTime(long ms) {
+        long sec = ms / 1000;
+        long min = sec / 60;
+        long rem = sec % 60;
+        return String.format("%02d:%02d", min, rem);
     }
 
     @FXML

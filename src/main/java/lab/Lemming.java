@@ -1,5 +1,4 @@
-// java
-// 'src/main/java/lab/Lemming.java'
+// src/main/java/lab/Lemming.java
 package lab;
 
 import javafx.geometry.Point2D;
@@ -9,23 +8,17 @@ import javafx.scene.image.Image;
 
 public class Lemming extends Entity {
 
-    public static final double WIDTH = 20;
-    public static final double HEIGHT = 20;
+    private static final double SCALE = 0.7;
+
     private static final double GRAVITY = 400;
     public static volatile double speedMultiplier = 1.0;
 
-    private static final Image WALK_RIGHT = new Image(
-        Lemming.class.getResourceAsStream("/lab/cosmo_right.gif"),
-        WIDTH, HEIGHT, true, true
-    );
-    private static final Image WALK_LEFT = new Image(
-        Lemming.class.getResourceAsStream("/lab/cosmo_left.gif"),
-        WIDTH, HEIGHT, true, true
-    );
-    private static final Image BLOCK_IMG = new Image(
-        Lemming.class.getResourceAsStream("/lab/stop.gif"),
-        WIDTH, HEIGHT, true, true
-    );
+    private static final Image WALK_RIGHT = new Image(Lemming.class.getResourceAsStream("/lab/cosmo_right.gif"));
+    private static final Image WALK_LEFT = new Image(Lemming.class.getResourceAsStream("/lab/cosmo_left.gif"));
+    private static final Image BLOCK_IMG = new Image(Lemming.class.getResourceAsStream("/lab/stop.gif"));
+
+    private final double width;
+    private final double height;
 
     private Role role;
     private int direction;
@@ -37,6 +30,10 @@ public class Lemming extends Entity {
 
     public Lemming(double x, double y) {
         super(x, y);
+        // Výpočet rozměrů podle obrázku a měřítka
+        this.width = WALK_RIGHT.getWidth() * SCALE;
+        this.height = WALK_RIGHT.getHeight() * SCALE;
+
         this.direction = 1;
         this.velocityY = 0;
         this.role = Role.DEFAULT;
@@ -44,14 +41,14 @@ public class Lemming extends Entity {
     }
 
     @Override
-    public double getWidth() { return WIDTH; }
+    public double getWidth() { return width; }
 
     @Override
-    public double getHeight() { return HEIGHT; }
+    public double getHeight() { return height; }
 
     @Override
     public Rectangle2D getBoundingBox() {
-        return new Rectangle2D(getX(), getY(), WIDTH, HEIGHT);
+        return new Rectangle2D(getX(), getY(), width, height);
     }
 
     public int getDirection() { return direction; }
@@ -81,13 +78,13 @@ public class Lemming extends Entity {
         double overlapX = 5;
 
         for (int i = 0; i < steps; i++) {
-            double xi = startX + direction * (i + 1) * (WIDTH - overlapX / 2);
-            double yi = startY + (i * HEIGHT);
+            double xi = startX + direction * (i + 1) * (width - overlapX / 2);
+            double yi = startY + (i * height);
 
             boolean exists = world.getBarriers().stream()
-                .anyMatch(b -> Math.abs(b.getX() - xi) < WIDTH && Math.abs(b.getY() - yi) < HEIGHT * 0.5);
+                .anyMatch(b -> Math.abs(b.getX() - xi) < width && Math.abs(b.getY() - yi) < height * 0.5);
             if (!exists) {
-                world.getBarriers().add(new Step(xi, yi, direction));
+                world.getBarriers().add(new Step(xi, yi, width, height, direction));
             }
         }
     }
@@ -96,8 +93,8 @@ public class Lemming extends Entity {
         double x = getX();
         double y = getY();
 
-        boolean overlapX = x < barrier.getX() + barrier.getWidth() && x + WIDTH > barrier.getX();
-        boolean overlapY = y < barrier.getY() + barrier.getHeight() && y + HEIGHT > barrier.getY();
+        boolean overlapX = x < barrier.getX() + barrier.getWidth() && x + width > barrier.getX();
+        boolean overlapY = y < barrier.getY() + barrier.getHeight() && y + height > barrier.getY();
 
         if (!overlapX || !overlapY) return;
 
@@ -111,7 +108,7 @@ public class Lemming extends Entity {
             int stepDir = step.getStepDirection();
             boolean canClimb = (direction == stepDir);
 
-            if (canClimb && y < barrierTop && y + HEIGHT > barrierBottom) {
+            if (canClimb && y < barrierTop && y + height > barrierBottom) {
                 position = new Point2D(x, barrierTop);
                 velocityY = 0;
                 return;
@@ -119,7 +116,7 @@ public class Lemming extends Entity {
 
             if (velocityY <= 0) {
                 double overlap = barrierTop - y;
-                if (overlap > 0 && overlap < HEIGHT * 0.6) {
+                if (overlap > 0 && overlap < height * 0.6) {
                     position = new Point2D(x, barrierTop);
                     velocityY = 0;
                     return;
@@ -127,17 +124,12 @@ public class Lemming extends Entity {
             }
 
             if (!canClimb) {
-                double frontX = direction == 1 ? x + WIDTH : x;
+                double frontX = direction == 1 ? x + width : x;
                 boolean hitsWall = (direction == 1 && frontX >= barrierLeft && frontX <= barrierLeft + 10)
                     || (direction == -1 && frontX <= barrierRight && frontX >= barrierRight - 10);
 
-                if (hitsWall && y + HEIGHT - 2 > barrierBottom && y < barrierTop - 2) {
+                if (hitsWall && y + height - 2 > barrierBottom && y < barrierTop - 2) {
                     changeDirection();
-                    if (direction == 1) {
-                        position = new Point2D(barrierRight + 1, y);
-                    } else {
-                        position = new Point2D(barrierLeft - WIDTH - 1, y);
-                    }
                 }
             }
             return;
@@ -145,23 +137,23 @@ public class Lemming extends Entity {
 
         if (velocityY <= 0) {
             double overlap = barrierTop - y;
-            if (overlap > 0 && overlap < HEIGHT * 0.6) {
+            if (overlap > 0 && overlap < height * 0.6) {
                 position = new Point2D(x, barrierTop);
                 velocityY = 0;
                 return;
             }
         }
 
-        double frontX = direction == 1 ? x + WIDTH : x;
+        double frontX = direction == 1 ? x + width : x;
         boolean hitsWall = (direction == 1 && frontX >= barrierLeft && frontX <= barrierLeft + 10)
             || (direction == -1 && frontX <= barrierRight && frontX >= barrierRight - 10);
 
-        if (hitsWall && y + HEIGHT - 2 > barrierBottom && y < barrierTop - 2) {
+        if (hitsWall && y + height - 2 > barrierBottom && y < barrierTop - 2) {
             changeDirection();
             if (direction == 1) {
                 position = new Point2D(barrierRight + 1, y);
             } else {
-                position = new Point2D(barrierLeft - WIDTH - 1, y);
+                position = new Point2D(barrierLeft - width - 1, y);
             }
         }
     }
@@ -173,22 +165,24 @@ public class Lemming extends Entity {
         double y = getY();
         double ox = other.getX();
         double oy = other.getY();
+        double ow = other.getWidth();
+        double oh = other.getHeight();
 
-        boolean overlapX = x < ox + WIDTH && x + WIDTH > ox;
-        boolean overlapY = y < oy + HEIGHT && y + HEIGHT > oy;
+        boolean overlapX = x < ox + ow && x + width > ox;
+        boolean overlapY = y < oy + oh && y + height > oy;
         if (!overlapX || !overlapY) return;
 
-        if (y + HEIGHT - 2 > oy && y < oy + HEIGHT - 2) {
+        if (y + height - 2 > oy && y < oy + oh - 2) {
             changeDirection();
             if (direction == 1) {
-                position = new Point2D(ox + WIDTH + 1, y);
+                position = new Point2D(ox + ow + 1, y);
             } else {
-                position = new Point2D(ox - WIDTH - 1, y);
+                position = new Point2D(ox - width - 1, y);
             }
         }
 
-        if (velocityY <= 0 && y < oy + HEIGHT && y + HEIGHT > oy + HEIGHT) {
-            position = new Point2D(x, oy + HEIGHT);
+        if (velocityY <= 0 && y < oy + oh && y + height > oy + oh) {
+            position = new Point2D(x, oy + oh);
             velocityY = 0;
         }
     }
@@ -200,10 +194,9 @@ public class Lemming extends Entity {
 
         Image img = (role == Role.BLOCK) ? BLOCK_IMG : ((direction == 1) ? WALK_RIGHT : WALK_LEFT);
 
-        // \- svět je už invertovaný (scale(1, \-1)), tak lemminga lokálně vrátíme zpět
         gc.save();
         gc.scale(1, -1);
-        gc.drawImage(img, x, -y - HEIGHT, WIDTH, HEIGHT);
+        gc.drawImage(img, x, -y - height, width, height);
         gc.restore();
     }
 

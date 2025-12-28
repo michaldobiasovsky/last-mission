@@ -119,7 +119,7 @@ public class World {
         for (Lemming l : lemmings) {
             double x = l.getX();
             double y = l.getY();
-            if (x < -Lemming.WIDTH || x > canvasWidth || y < -Lemming.HEIGHT || y > canvasHeight) {
+            if (x < -l.getWidth() || x > canvasWidth || y < -l.getHeight() || y > canvasHeight) {
                 outOfBounds.add(l);
             }
         }
@@ -136,8 +136,14 @@ public class World {
             req.acc += deltaTime;
             while (req.remaining > 0 && req.acc >= req.interval) {
                 req.acc -= req.interval;
-                double spawnX = req.door.getX() + (req.door.getWidth() - Lemming.WIDTH) / 2.0;
-                double spawnY = req.door.getY() + (req.door.getHeight() - Lemming.HEIGHT) / 2.0;
+
+                Lemming dummy = new Lemming(0, 0);
+                double lWidth = dummy.getWidth();
+                double lHeight = dummy.getHeight();
+
+                double spawnX = req.door.getX() + (req.door.getWidth() - lWidth) / 2.0;
+                double spawnY = req.door.getY() + (req.door.getHeight() - lHeight) / 2.0;
+
                 lemmings.add(new Lemming(spawnX, spawnY));
                 req.remaining--;
             }

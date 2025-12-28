@@ -5,13 +5,11 @@ import javafx.scene.paint.Color;
 
 public class Step extends Barrier {
 
-    private static final double STEP_WIDTH = Lemming.WIDTH + 10;
-
     // Směr schodů: 1 = schody jdou doprava (vylézá se zleva), -1 = schody jdou doleva
     private final int stepDirection;
 
-    public Step(double x, double y, int direction) {
-        super(x, y, STEP_WIDTH, Lemming.HEIGHT);
+    public Step(double x, double y, double lemmingWidth, double lemmingHeight, int direction) {
+        super(x, y, lemmingWidth + 10, lemmingHeight);
         this.stepDirection = direction;
     }
 
