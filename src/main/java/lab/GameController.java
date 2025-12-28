@@ -6,6 +6,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -269,6 +271,16 @@ public class GameController implements StageAware {
             done.setTitle("Level dokončen");
             done.setHeaderText("Gratulace! Level byl dokončen.");
             done.setContentText("Váš čas: " + timeStr + "\nCo chcete dělat dále?");
+
+            Image iconImage = new Image(getClass().getResourceAsStream("/lab/stay.gif"));
+            ImageView imageView = new ImageView(iconImage);
+            imageView.setFitHeight(48);
+            imageView.setFitWidth(48);
+            done.setGraphic(imageView);
+
+            Stage dialogStage = (Stage) done.getDialogPane().getScene().getWindow();
+            dialogStage.getIcons().add(iconImage);
+
             done.getButtonTypes().setAll(retryButton, closeButton);
 
             java.util.Optional<javafx.scene.control.ButtonType> result = done.showAndWait();
