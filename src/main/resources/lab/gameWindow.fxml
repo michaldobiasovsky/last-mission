@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lab.GameController">
+<BorderPane fx:id="root" prefHeight="770.0" prefWidth="1025.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lab.GameController">
     <bottom>
         <HBox alignment="TOP_CENTER" spacing="40.0" BorderPane.alignment="CENTER">
             <children>
@@ -73,7 +73,7 @@
         </HBox>
     </bottom>
     <center>
-        <Canvas fx:id="canvas" height="500.0" width="800.0" BorderPane.alignment="CENTER">
+        <Canvas fx:id="canvas" height="640.0" width="1025.0" BorderPane.alignment="CENTER">
             <BorderPane.margin>
                 <Insets />
             </BorderPane.margin>
@@ -85,20 +85,23 @@
                 <Button fx:id="stop" maxWidth="-Infinity" mnemonicParsing="false" onAction="#stop" text="Stop" HBox.hgrow="ALWAYS">
                     <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin></Button>
-
+                    </HBox.margin>
+                </Button>
                 <Label fx:id="LemmingsCount" alignment="CENTER" maxWidth="1.7976931348623157E308" text="LemmingsCount" HBox.hgrow="ALWAYS">
                     <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin></Label>
+                    </HBox.margin>
+                </Label>
                 <Label fx:id="time" alignment="CENTER" maxWidth="1.7976931348623157E308" text="Time" HBox.hgrow="ALWAYS">
                     <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin></Label>
+                    </HBox.margin>
+                </Label>
                 <Label fx:id="NeadedLemmings" alignment="CENTER" maxWidth="1.7976931348623157E308" text="NeadedLemmings" HBox.hgrow="ALWAYS">
                     <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin></Label>
+                    </HBox.margin>
+                </Label>
             </children>
         </HBox>
     </top>

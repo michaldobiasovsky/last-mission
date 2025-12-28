@@ -48,20 +48,8 @@ public class MainMenuController {
     }
 
     @FXML
-    void showLevels(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/lab/levelsSelection.fxml"));
-            Parent root = loader.load();
-            Stage stage = new Stage();
-            stage.setTitle("Levels");
-            stage.setScene(new Scene(root));
-            stage.setResizable(false);
-            stage.getIcons().add(new Image(getClass().getResourceAsStream("/lab/stay.gif")));
-            stage.showAndWait();
-            updateStartButtonText();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+    public void showLevels() {
+        App.showLevelsSelection();
     }
 
     @FXML
@@ -74,6 +62,7 @@ public class MainMenuController {
             }
         });
     }
+
 
     @FXML
     void resetScores(ActionEvent event) {

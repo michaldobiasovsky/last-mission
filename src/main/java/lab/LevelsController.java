@@ -1,86 +1,113 @@
 package lab;
 
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.image.Image;
-import javafx.scene.layout.GridPane;
-import javafx.stage.Modality;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.stage.Stage;
-import lab.score.Score;
-import lab.score.ScoreException;
-import lab.score.ScoreRepository;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
-public class LevelsController {
+public class LevelsController implements StageAware {
 
-    @FXML
-    private GridPane grid;
+    @FXML private ListView<Level> levelList;
+
+    @FXML private Label nameLabel;
+    @FXML private Label totalLabel;
+    @FXML private Label neededLabel;
+    @FXML private Label entryLabel;
+    @FXML private Label abilitiesLabel;
+    @FXML private Label bestTimeLabel;
+
+    @FXML private Button playButton;
+
+    private Stage stage;
+    private List<Level> levels;
+    private Level selected;
+
+    @Override
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
 
     @FXML
     public void initialize() {
-        List<Level> levels = LevelRepository.loadDefaults();
+        levels = LevelRepository.loadDefaults();
+        levelList.setItems(FXCollections.observableArrayList(levels));
 
-        List<Score> scores;
-        try {
-            scores = ScoreRepository.load();
-        } catch (ScoreException e) {
-            scores = java.util.Collections.emptyList();
+        levelList.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(Level item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : (item.getId() + " - " + item.getName()));
+            }
+        });
+
+        if (playButton != null) playButton.setDisable(true);
+
+        levelList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+            selected = newV;
+            renderDetails(newV);
+            if (playButton != null) playButton.setDisable(newV == null);
+        });
+
+        if (!levels.isEmpty()) {
+            levelList.getSelectionModel().selectFirst();
+        }
+    }
+
+    private void renderDetails(Level lvl) {
+        if (nameLabel == null) return;
+
+        if (lvl == null) {
+            nameLabel.setText("Name: -");
+            if (totalLabel != null) totalLabel.setText("Total: -");
+            if (neededLabel != null) neededLabel.setText("Needed: -");
+            if (entryLabel != null) entryLabel.setText("Entry: -");
+            if (abilitiesLabel != null) abilitiesLabel.setText("Abilities: -");
+            if (bestTimeLabel != null) bestTimeLabel.setText("Best time: -");
+            return;
         }
 
-        int cols = 4;
-        int row = 0;
-        int col = 0;
+        nameLabel.setText("Name: " + (lvl.getName() != null ? lvl.getName() : "-"));
+        if (totalLabel != null) totalLabel.setText("Total: " + lvl.getTotalLemmings());
+        if (neededLabel != null) neededLabel.setText("Needed: " + lvl.getNeededLemmings());
 
-        for (Level lvl : levels) {
-            Button b = new Button(String.valueOf(lvl.getId()));
-            b.setPrefSize(60, 60);
-
-            boolean completed = scores.stream()
-                .anyMatch(s -> s.getLevel() == lvl.getId() && s.isUnlocked());
-            if (completed) {
-                b.setStyle("-fx-background-color: #00C853; -fx-text-fill: white;");
+        if (entryLabel != null) {
+            if (lvl.getEntryPosition() != null) {
+                entryLabel.setText("Entry: " + String.format("%.0f, %.0f",
+                    lvl.getEntryPosition().getX(), lvl.getEntryPosition().getY()));
             } else {
-                b.setStyle("-fx-background-color: #DDDDDD;");
+                entryLabel.setText("Entry: -");
             }
+        }
 
-            b.setOnAction(e -> {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/lab/levelDetails.fxml"));
-                    Parent detailsRoot = loader.load();
-                    LevelDetailsController ctrl = loader.getController();
-                    Stage owner = (Stage) grid.getScene().getWindow();
-                    ctrl.setOwnerStage(owner);
-                    ctrl.setLevel(lvl);
+        if (abilitiesLabel != null) {
+            Map<Role, Integer> m = lvl.getAbilityCounts();
+            abilitiesLabel.setText("Abilities: " + (m == null ? "-" : m.toString()));
+        }
 
-                    Stage detailsStage = new Stage();
-                    detailsStage.initOwner(owner);
-                    detailsStage.initModality(Modality.APPLICATION_MODAL);
-                    detailsStage.setScene(new javafx.scene.Scene(detailsRoot));
-                    detailsStage.setTitle("Level " + lvl.getId());
-                    detailsStage.setResizable(false);
-                    detailsStage.getIcons().add(new Image(getClass().getResourceAsStream("/lab/stay.gif")));
-                    detailsStage.showAndWait();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            });
-
-            grid.add(b, col, row);
-            col++;
-            if (col >= cols) {
-                col = 0;
-                row++;
-            }
+        if (bestTimeLabel != null) {
+            bestTimeLabel.setText("Best time: -");
         }
     }
 
     @FXML
+    private void onPlay() {
+        if (selected == null) return;
+        App.showGame(selected);
+    }
+
+    @FXML
+    private void onBack() {
+        App.showMainMenu();
+    }
+
+    @FXML
     private void onClose() {
-        Stage stage = (Stage) grid.getScene().getWindow();
-        stage.close();
+        onBack();
     }
 }

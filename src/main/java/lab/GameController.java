@@ -1,4 +1,3 @@
-// java
 package lab;
 
 import javafx.animation.AnimationTimer;
@@ -8,6 +7,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import lab.score.Score;
 import lab.score.ScoreException;
@@ -18,8 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GameController {
+public class GameController implements StageAware {
 
+    @FXML private BorderPane root;
     @FXML private Canvas canvas;
 
     @FXML private Button blockBtn;
@@ -29,6 +30,8 @@ public class GameController {
     @FXML private Label LemmingsCount;
     @FXML private Label time;
     @FXML private Label NeadedLemmings;
+
+    private Stage stage;
 
     private World world;
     private DrawingThread timer;
@@ -42,6 +45,11 @@ public class GameController {
 
     private long levelStartTime = 0;
     private boolean levelFinished = false;
+
+    @Override
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
 
     @FXML
     void initialize() {
@@ -81,18 +89,13 @@ public class GameController {
 
     @FXML
     void stop(javafx.event.ActionEvent event) {
-        if (timer != null) timer.stop();
-        if (uiUpdater != null) uiUpdater.stop();
-        Stage stage = (Stage) canvas.getScene().getWindow();
-        if (stage != null) stage.close();
+        stop();
+        App.showMainMenu();
     }
 
-    // \- přetížení pro volání z App.stop()
     public void stop() {
         if (timer != null) timer.stop();
         if (uiUpdater != null) uiUpdater.stop();
-        Stage stage = (Stage) canvas.getScene().getWindow();
-        if (stage != null) stage.close();
     }
 
     public void startLevel(Level level) {
@@ -117,11 +120,35 @@ public class GameController {
 
         updateAbilityButtons();
 
+        applyLevelBackground(level);
+
         timer = new DrawingThread(canvas, world);
         timer.start();
 
         levelStartTime = System.currentTimeMillis();
         startUiUpdater();
+    }
+
+    private void applyLevelBackground(Level level) {
+        if (root == null) return;
+
+        String imagePath = "/lab/intro.png";
+
+        if (level != null && level.getBackgroundImagePath() != null) {
+            imagePath = level.getBackgroundImagePath();
+        }
+
+        java.net.URL resource = getClass().getResource(imagePath);
+        if (resource != null) {
+            root.setStyle(
+                "-fx-background-image: url('" + resource.toExternalForm() + "');" +
+                    "-fx-background-repeat: no-repeat;" +
+                    "-fx-background-position: center center;" +
+                    "-fx-background-size: cover;"
+            );
+        } else {
+            System.err.println("Background image not found: " + imagePath);
+        }
     }
 
     private void handleCanvasClick(MouseEvent e) {
@@ -184,7 +211,6 @@ public class GameController {
         int exited = (world != null) ? world.getExitedCount() : 0;
         NeadedLemmings.setText("Cíl: " + exited + "/" + needed);
 
-        // \- automatické dokončení levelu při splnění cíle
         if (!levelFinished && needed > 0 && exited >= needed) {
             finishLevel();
         }
@@ -220,7 +246,6 @@ public class GameController {
         try {
             ScoreRepository.save(scores);
         } catch (ScoreException e) {
-            // ignore
         }
     }
 
@@ -252,8 +277,7 @@ public class GameController {
                 levelFinished = false;
                 startLevel(currentLevelObj);
             } else {
-                Stage stage = (Stage) canvas.getScene().getWindow();
-                if (stage != null) stage.close();
+                App.showMainMenu();
             }
         });
     }
