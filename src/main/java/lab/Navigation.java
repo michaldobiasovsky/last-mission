@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 /**
  * Utility class for handling scene navigation on the primary stage.
@@ -24,6 +25,10 @@ public class Navigation {
     }
     
     public static void loadScene(String fxmlPath) throws IOException {
+        loadScene(fxmlPath, null);
+    }
+    
+    public static <T> void loadScene(String fxmlPath, Consumer<T> controllerInitializer) throws IOException {
         if (primaryStage == null) {
             throw new IllegalStateException("Primary stage not set");
         }
@@ -36,6 +41,13 @@ public class Navigation {
         
         FXMLLoader loader = new FXMLLoader(Navigation.class.getResource(fxmlPath));
         Parent root = loader.load();
+        
+        // Initialize controller if provided
+        if (controllerInitializer != null) {
+            T controller = loader.getController();
+            controllerInitializer.accept(controller);
+        }
+        
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setScene(scene);
     }
@@ -60,10 +72,6 @@ public class Navigation {
         
         // Start level after scene is set
         javafx.application.Platform.runLater(() -> controller.startLevel(level));
-    }
-    
-    public static void setGameController(GameController controller) {
-        currentGameController = controller;
     }
     
     public static GameController getCurrentGameController() {
