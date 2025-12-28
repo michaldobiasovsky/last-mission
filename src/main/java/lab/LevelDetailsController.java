@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import lab.score.Score;
@@ -92,6 +93,8 @@ public class LevelDetailsController {
             gameStage.setTitle("Lemmings - Level " + selectedLevel.getId());
             gameStage.setScene(new Scene(gameRoot));
             gameStage.setResizable(false);
+            gameStage.getIcons().add(new Image(getClass().getResourceAsStream("/lab/stay.gif")));
+
 
             Stage detailsStage = (Stage) playButton.getScene().getWindow();
             Stage selectionStage = ownerStage;

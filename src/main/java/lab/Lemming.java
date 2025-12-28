@@ -1,8 +1,11 @@
+// java
+// 'src/main/java/lab/Lemming.java'
 package lab;
 
 import javafx.geometry.Point2D;
-import javafx.scene.paint.Color;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 
 public class Lemming extends Entity {
 
@@ -10,6 +13,19 @@ public class Lemming extends Entity {
     public static final double HEIGHT = 20;
     private static final double GRAVITY = 400;
     public static volatile double speedMultiplier = 1.0;
+
+    private static final Image WALK_RIGHT = new Image(
+        Lemming.class.getResourceAsStream("/lab/cosmo_right.gif"),
+        WIDTH, HEIGHT, true, true
+    );
+    private static final Image WALK_LEFT = new Image(
+        Lemming.class.getResourceAsStream("/lab/cosmo_left.gif"),
+        WIDTH, HEIGHT, true, true
+    );
+    private static final Image BLOCK_IMG = new Image(
+        Lemming.class.getResourceAsStream("/lab/stop.gif"),
+        WIDTH, HEIGHT, true, true
+    );
 
     private Role role;
     private int direction;
@@ -62,7 +78,6 @@ public class Lemming extends Entity {
         if (steps <= 0) return;
         double startX = getX();
         double startY = getY();
-
         double overlapX = 5;
 
         for (int i = 0; i < steps; i++) {
@@ -75,11 +90,6 @@ public class Lemming extends Entity {
                 world.getBarriers().add(new Step(xi, yi, direction));
             }
         }
-    }
-
-    private boolean checkBarrierAt(World world, double bx, double by) {
-        return world.getBarriers().stream()
-            .anyMatch(b -> Math.abs(b.getX() - bx) < 0.1 && Math.abs(b.getY() - by) < 0.1);
     }
 
     public void checkCollisionWithBarrier(Barrier barrier, World world) {
@@ -99,7 +109,6 @@ public class Lemming extends Entity {
         if (barrier.isStep()) {
             Step step = (Step) barrier;
             int stepDir = step.getStepDirection();
-
             boolean canClimb = (direction == stepDir);
 
             if (canClimb && y < barrierTop && y + HEIGHT > barrierBottom) {
@@ -185,19 +194,17 @@ public class Lemming extends Entity {
     }
 
     @Override
-    public void draw(javafx.scene.canvas.GraphicsContext gc) {
+    public void draw(GraphicsContext gc) {
         double x = getX();
         double y = getY();
-        gc.setFill(role == Role.BLOCK ? Color.RED : Color.GREEN);
-        gc.fillOval(x, y, WIDTH, HEIGHT);
-        gc.setFill(Color.BLACK);
-        if (direction == 1) {
-            gc.fillOval(x + WIDTH * 0.6, y + HEIGHT * 0.25, 3, 3);
-            gc.fillOval(x + WIDTH * 0.75, y + HEIGHT * 0.25, 3, 3);
-        } else {
-            gc.fillOval(x + WIDTH * 0.15, y + HEIGHT * 0.25, 3, 3);
-            gc.fillOval(x + WIDTH * 0.30, y + HEIGHT * 0.25, 3, 3);
-        }
+
+        Image img = (role == Role.BLOCK) ? BLOCK_IMG : ((direction == 1) ? WALK_RIGHT : WALK_LEFT);
+
+        // \- svět je už invertovaný (scale(1, \-1)), tak lemminga lokálně vrátíme zpět
+        gc.save();
+        gc.scale(1, -1);
+        gc.drawImage(img, x, -y - HEIGHT, WIDTH, HEIGHT);
+        gc.restore();
     }
 
     public void simulate(double deltaTime, World world) {
@@ -226,6 +233,5 @@ public class Lemming extends Entity {
     }
 
     public void onCollision(Lemming other) {
-
     }
 }

@@ -10,7 +10,7 @@ public class DrawingThread extends AnimationTimer {
 
     private final Canvas canvas;
     private final GraphicsContext gc;
-    private final World world; // změna: final a předává se zvenčí
+    private final World world;
 
     private double x = 0;
     private double y = 50;

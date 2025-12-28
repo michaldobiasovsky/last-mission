@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import lab.score.Score;
 import lab.score.ScoreException;
@@ -55,6 +56,7 @@ public class MainMenuController {
             stage.setTitle("Levels");
             stage.setScene(new Scene(root));
             stage.setResizable(false);
+            stage.getIcons().add(new Image(getClass().getResourceAsStream("/lab/stay.gif")));
             stage.showAndWait();
             updateStartButtonText();
         } catch (IOException ex) {

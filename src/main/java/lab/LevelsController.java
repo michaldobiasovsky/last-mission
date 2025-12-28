@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -61,6 +62,7 @@ public class LevelsController {
                     detailsStage.setScene(new javafx.scene.Scene(detailsRoot));
                     detailsStage.setTitle("Level " + lvl.getId());
                     detailsStage.setResizable(false);
+                    detailsStage.getIcons().add(new Image(getClass().getResourceAsStream("/lab/stay.gif")));
                     detailsStage.showAndWait();
                 } catch (IOException ex) {
                     ex.printStackTrace();

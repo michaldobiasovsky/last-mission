@@ -1,3 +1,5 @@
+// java
+// `src/main/java/lab/World.java`
 package lab;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -5,38 +7,29 @@ import javafx.scene.canvas.GraphicsContext;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 
 public class World {
 
     private final List<Lemming> lemmings = new ArrayList<>();
     private final List<Barrier> barriers = new ArrayList<>();
     private final List<Door> doors = new ArrayList<>();
-
     private final List<SpawnRequest> spawnRequests = new ArrayList<>();
+
+    private final double canvasWidth;
+    private final double canvasHeight;
 
     private int exitedCount = 0;
 
-    public World(double width, double height) {
-        barriers.add(new Barrier(10, 0, 20, 200)); // levá bariéra
-        barriers.add(new Barrier(0, 5, width / 2, 20)); // podlaha
-
-        Random rnd = new Random();
-        for (int i = 0; i < 10; i++) {
-            double x = 40 + rnd.nextDouble() * (width - 80);
-            double y = 40 + rnd.nextDouble() * (height - 80);
-        }
-
-        doors.add(new Door(300, 20, DoorType.EXIT));
-        doors.add(new Door(20, 20, DoorType.ENTRY));
-    }
-
-    private World() {
+    public World(double canvasWidth, double canvasHeight) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
     }
 
     public static World fromLevel(Level level, double canvasWidth, double canvasHeight) {
-        World w = new World();
-        if (level == null) return w;
+        World w = new World(canvasWidth, canvasHeight);
+        if (level == null) {
+            return w;
+        }
 
         w.getBarriers().addAll(level.getBarriers());
         w.getDoors().addAll(level.getDoors());
@@ -44,14 +37,12 @@ public class World {
         if (level.getTotalLemmings() > 0) {
             w.spawnFromEntry(level.getTotalLemmings(), 1.0);
         }
-
         return w;
     }
 
     public List<Lemming> getLemmings() { return lemmings; }
     public List<Barrier> getBarriers() { return barriers; }
     public List<Door> getDoors() { return doors; }
-
     public int getExitedCount() { return exitedCount; }
 
     public void spawnFromEntry(int count, double intervalSeconds) {
@@ -92,11 +83,13 @@ public class World {
 
     public void draw(GraphicsContext gc) {
         gc.save();
+        gc.translate(0, canvasHeight);
         gc.scale(1, -1);
-        gc.translate(0, -gc.getCanvas().getHeight());
-        for (Drawable d : getDrawables()) {
-            d.draw(gc);
-        }
+
+        for (Barrier b : barriers) b.draw(gc);
+        for (Door d : doors) d.draw(gc);
+        for (Lemming l : lemmings) l.draw(gc);
+
         gc.restore();
     }
 
@@ -107,18 +100,31 @@ public class World {
             l.simulate(deltaTime, this);
         }
 
-        List<Lemming> toRemove = new ArrayList<>();
-        for (Lemming l : getLemmings()) {
-            for (Door d : getDoors()) {
-                if (d.getType() == DoorType.EXIT && l.getBoundingBox().intersects(d.getBoundingBox())) {
-                    toRemove.add(l);
+        // \- lemmingy, kteří úspěšně odešli exitem
+        List<Lemming> exited = new ArrayList<>();
+        for (Lemming l : lemmings) {
+            for (Door d : doors) {
+                if (d.getType() == DoorType.EXIT && d.isLemmingExiting(l)) {
+                    exited.add(l);
                     break;
                 }
             }
         }
-        if (!toRemove.isEmpty()) {
-            exitedCount += toRemove.size(); // \- inkrementace počitadla při průchodu EXITem
-            getLemmings().removeAll(toRemove);
+        if (!exited.isEmpty()) {
+            exitedCount += exited.size();
+            lemmings.removeAll(exited);
+        }
+
+        List<Lemming> outOfBounds = new ArrayList<>();
+        for (Lemming l : lemmings) {
+            double x = l.getX();
+            double y = l.getY();
+            if (x < -Lemming.WIDTH || x > canvasWidth || y < -Lemming.HEIGHT || y > canvasHeight) {
+                outOfBounds.add(l);
+            }
+        }
+        if (!outOfBounds.isEmpty()) {
+            lemmings.removeAll(outOfBounds);
         }
     }
 
@@ -135,9 +141,7 @@ public class World {
                 lemmings.add(new Lemming(spawnX, spawnY));
                 req.remaining--;
             }
-            if (req.remaining <= 0) {
-                finished.add(req);
-            }
+            if (req.remaining <= 0) finished.add(req);
         }
         spawnRequests.removeAll(finished);
     }
