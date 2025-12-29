@@ -12,8 +12,10 @@ import lab.score.ScoreException;
 import lab.score.ScoreRepository;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LevelsController implements StageAware {
 
@@ -118,11 +120,24 @@ public class LevelsController implements StageAware {
         }
 
         if (bestTimeLabel != null) {
-            Score s = getScoreForLevel(lvl.getId());
-            if (s != null && s.isUnlocked()) {
-                bestTimeLabel.setText("Best time: " + formatTime(s.getTime()));
-            } else {
+            List<Score> top = scores.stream()
+                .filter(s -> s.getLevel() == lvl.getId() && s.isUnlocked())
+                .sorted(Comparator.comparingLong(Score::getTime))
+                .limit(10)
+                .collect(Collectors.toList());
+
+            if (top.isEmpty()) {
                 bestTimeLabel.setText("Best time: -");
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Top 10:\n");
+                int idx = 1;
+                for (Score s : top) {
+                    sb.append(String.format("%d) %s - %s\n", idx++,
+                        (s.getPlayerName() == null || s.getPlayerName().isBlank()) ? "Anonymous" : s.getPlayerName(),
+                        formatTime(s.getTime())));
+                }
+                bestTimeLabel.setText(sb.toString().trim());
             }
         }
     }
@@ -130,13 +145,6 @@ public class LevelsController implements StageAware {
     private boolean isLevelWon(int levelId) {
         return scores.stream()
             .anyMatch(s -> s.getLevel() == levelId && s.isUnlocked());
-    }
-
-    private Score getScoreForLevel(int levelId) {
-        return scores.stream()
-            .filter(s -> s.getLevel() == levelId && s.isUnlocked())
-            .findFirst()
-            .orElse(null);
     }
 
     private String formatTime(long ms) {

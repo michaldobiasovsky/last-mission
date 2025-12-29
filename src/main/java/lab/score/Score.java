@@ -1,5 +1,7 @@
 package lab.score;
 
+import lab.score.ScoreException;
+
 import java.util.Objects;
 
 public class Score {
@@ -7,11 +9,13 @@ public class Score {
     private final int level;
     private final boolean unlocked;
     private final long timeMillis;
+    private final String playerName;
 
-    public Score(int level, boolean unlocked, long timeMillis) {
+    public Score(int level, boolean unlocked, long timeMillis, String playerName) {
         this.level = level;
         this.unlocked = unlocked;
         this.timeMillis = timeMillis;
+        this.playerName = playerName != null ? playerName : "";
     }
 
     public int getLevel() {
@@ -30,22 +34,34 @@ public class Score {
         return this.timeMillis;
     }
 
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    // unlocked je uložen jako 1/0, playerName escapuje '\' a ';'
     public String toCsvLine() {
-        return String.format("%d;%b;%d", level, unlocked, timeMillis);
+        String escapedName = playerName.replace("\\", "\\\\").replace(";", "\\;");
+        return String.format("%d;%s;%d;%s", level, unlocked ? "1" : "0", timeMillis, escapedName);
     }
 
     public static Score fromCsvLine(String line, int lineNumber) throws ScoreException {
-        String[] parts = line.split(";");
-        if (parts.length != 3) {
+        if (line == null) throw new ScoreException("Empty line at " + lineNumber);
+        String[] parts = line.split(";", 4);
+        if (parts.length < 3) {
             throw new ScoreException("Neplatný formát na řádku " + lineNumber + ": " + line);
         }
         try {
             int lvl = Integer.parseInt(parts[0].trim());
-            boolean unlocked = Boolean.parseBoolean(parts[1].trim());
+            boolean unlocked = "1".equals(parts[1].trim()) || Boolean.parseBoolean(parts[1].trim());
             long time = Long.parseLong(parts[2].trim());
-            return new Score(lvl, unlocked, time);
-        } catch (NumberFormatException ex) {
-            throw new ScoreException("Chyba parsování na řádku " + lineNumber + ": " + line, ex);
+            String name = "";
+            if (parts.length >= 4) {
+                String rawName = parts[3];
+                name = rawName.replace("\\;", ";").replace("\\\\", "\\");
+            }
+            return new Score(lvl, unlocked, time, name);
+        } catch (NumberFormatException e) {
+            throw new ScoreException("Chyba parsování na řádku " + lineNumber + ": " + line, e);
         }
     }
 
@@ -56,16 +72,18 @@ public class Score {
         Score score = (Score) o;
         return level == score.level &&
             unlocked == score.unlocked &&
-            timeMillis == score.timeMillis;
+            timeMillis == score.timeMillis &&
+            Objects.equals(playerName, score.playerName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(level, unlocked, timeMillis);
+        return Objects.hash(level, unlocked, timeMillis, playerName);
     }
 
     @Override
     public String toString() {
-        return String.format("Score{level=%d, unlocked=%b, timeMillis=%d}", level, unlocked, timeMillis);
+        return String.format("Score{level=%d, unlocked=%b, timeMillis=%d, playerName=%s}",
+            level, unlocked, timeMillis, playerName);
     }
 }
