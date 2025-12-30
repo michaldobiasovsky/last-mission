@@ -4,12 +4,27 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.util.Objects;
+
 public class Step extends Barrier {
 
     private final int stepDirection;
 
-    private static final Image STAIRS_TEX_IMG =
-        new Image(Step.class.getResourceAsStream("/lab/textureStairs.jpg"));
+    private static final Image STAIRS_TEX_IMG = loadStairsTexture();
+
+    private static Image loadStairsTexture() {
+        try (InputStream in = Objects.requireNonNull(
+            Step.class.getResourceAsStream("/lab/textureStairs.jpg"),
+            "Resource not found: /lab/textureStairs.jpg"
+        )) {
+            return new Image(in);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
     public Step(double x, double y, double lemmingWidth, double lemmingHeight, int direction) {
         super(x, y, lemmingWidth + 10, lemmingHeight);
