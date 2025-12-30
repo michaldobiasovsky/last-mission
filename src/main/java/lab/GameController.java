@@ -179,9 +179,9 @@ public class GameController implements StageAware {
                     world.getLemmings().remove(target);
                 }
                 break;
+
             default:
                 break;
-
         }
         updateAbilityButtons();
     }
@@ -292,9 +292,8 @@ public class GameController implements StageAware {
     }
 
     private TextField setupScoreInput(javafx.scene.control.Dialog<?> dialog, String timeStr) {
-        String defaultName = Protection.getVerifiedName().orElse("");
         Label info = new Label("Your time: " + timeStr + "\nEnter player name for the leaderboard:");
-        TextField nameField = new TextField(defaultName);
+        TextField nameField = new TextField("Anonymous");
 
         VBox content = new VBox(8);
         content.getChildren().addAll(info, nameField);

@@ -8,13 +8,16 @@ import javafx.scene.image.Image;
 public class Lemming extends Entity {
 
     private static final double SCALE = 0.7;
-
     private static final double GRAVITY = 400;
-    public static volatile double speedMultiplier = 0.8;
+
+    private static volatile double speedMultiplier = 0.8;
 
     private static final Image WALK_RIGHT = new Image(Lemming.class.getResourceAsStream("/lab/cosmo_right.gif"));
     private static final Image WALK_LEFT = new Image(Lemming.class.getResourceAsStream("/lab/cosmo_left.gif"));
     private static final Image BLOCK_IMG = new Image(Lemming.class.getResourceAsStream("/lab/stop.gif"));
+
+    private static final double COLLISION_TOLERANCE = 15.0;
+    private static final double CLIMB_TOLERANCE = 2.0;
 
     private final double width;
     private final double height;
@@ -28,7 +31,6 @@ public class Lemming extends Entity {
     private static final double DIRECTION_COOLDOWN_SEC = 0.15;
 
     private boolean onGround = false;
-
     private boolean onFloor = false;
 
     public Lemming(double x, double y) {
@@ -40,6 +42,14 @@ public class Lemming extends Entity {
         this.velocityY = 0;
         this.role = Role.DEFAULT;
         this.speedX = 40;
+    }
+
+    public static double getSpeedMultiplier() {
+        return speedMultiplier;
+    }
+
+    public static void setSpeedMultiplier(double speed) {
+        speedMultiplier = speed;
     }
 
     @Override
@@ -76,7 +86,7 @@ public class Lemming extends Entity {
     }
 
     public boolean buildStairs(World world, int steps) {
-        if (role == Role.BLOCK) return false; // BLOCK nesmí stavět
+        if (role == Role.BLOCK) return false;
         if (steps <= 0) return false;
         if (!onFloor) return false;
 
@@ -105,84 +115,127 @@ public class Lemming extends Entity {
 
         return builtAny;
     }
+
     public void checkCollisionWithBarrier(Barrier barrier, World world) {
+        if (!isOverlapping(barrier)) {
+            return;
+        }
+
+        if (handleStepCollision(barrier, world)) {
+            return;
+        }
+
+        if (handleVerticalCollision(barrier)) {
+            return;
+        }
+
+        handleHorizontalCollision(barrier);
+    }
+
+    boolean isOverlapping(Barrier barrier) {
         double x = getX();
         double y = getY();
         double w = getWidth();
         double h = getHeight();
 
-        if (x >= barrier.getX() + barrier.getWidth() || x + w <= barrier.getX() ||
-            y >= barrier.getY() + barrier.getHeight() || y + h <= barrier.getY()) {
-            return;
-        }
+        return x < barrier.getX() + barrier.getWidth()
+            && x + w > barrier.getX()
+            && y < barrier.getY() + barrier.getHeight()
+            && y + h > barrier.getY();
+    }
 
+    private boolean handleStepCollision(Barrier barrier, World world) {
+        if (!barrier.isStep()) return false;
+
+        Step step = (Step) barrier;
         double barrierTop = barrier.getY() + barrier.getHeight();
         double barrierBottom = barrier.getY();
-        double barrierLeft = barrier.getX();
-        double barrierRight = barrier.getX() + barrier.getWidth();
+        double h = getHeight();
+        double y = getY();
 
-        if (barrier.isStep()) {
-            Step step = (Step) barrier;
-            int stepDir = step.getStepDirection();
-            boolean canClimb = (direction == stepDir);
+        int stepDir = step.getStepDirection();
+        boolean canClimb = (direction == stepDir);
+        double heightDifference = barrierTop - y;
+        boolean isTooHigh = heightDifference > COLLISION_TOLERANCE;
 
-            double heightDifference = barrierTop - y;
-            boolean isTooHigh = heightDifference > 15;
+        if (canClimb && !isTooHigh && y < barrierTop && y + h > barrierBottom) {
+            double targetY = barrierTop;
+            Rectangle2D targetBox = new Rectangle2D(getX(), targetY, getWidth(), h);
 
-            if (canClimb && !isTooHigh && y < barrierTop && y + h > barrierBottom) {
-                double targetY = barrierTop;
-                Rectangle2D targetBox = new Rectangle2D(x, targetY, w, h);
+            boolean isCeilingBlocked = world.getBarriers().stream()
+                .filter(b -> !b.isStep())
+                .anyMatch(b -> b.getBoundingBox().intersects(targetBox));
 
-                boolean isCeilingBlocked = world.getBarriers().stream()
-                    .filter(b -> !b.isStep())
-                    .anyMatch(b -> b.getBoundingBox().intersects(targetBox));
-
-                if (!isCeilingBlocked) {
-                    position = new Point2D(x, barrierTop);
-                    velocityY = 0;
-                    onGround = true;
-                    return;
-                }
+            if (!isCeilingBlocked) {
+                position = new Point2D(getX(), barrierTop);
+                velocityY = 0;
+                onGround = true;
+                return true;
             }
         }
+        return false;
+    }
 
+    private boolean handleVerticalCollision(Barrier barrier) {
+        double barrierTop = barrier.getY() + barrier.getHeight();
+        double barrierBottom = barrier.getY();
+        double y = getY();
+        double h = getHeight();
+        double x = getX();
+
+        // Falling down
         if (velocityY > 0) {
             double penetration = (y + h) - barrierBottom;
             if (penetration > 0 && y < barrierBottom) {
                 position = new Point2D(x, barrierBottom - h);
                 velocityY = 0;
-
                 onGround = true;
                 if (!barrier.isStep()) {
                     onFloor = true;
                 }
-                return;
+                return true;
             }
         }
 
+        // Jumping up (hitting ceiling)
         if (velocityY <= 0) {
             double overlap = barrierTop - y;
             if (overlap > 0 && overlap < h * 0.6) {
                 position = new Point2D(x, barrierTop);
                 velocityY = 0;
-
                 onGround = true;
                 if (!barrier.isStep()) {
                     onFloor = true;
                 }
-                return;
+                return true;
             }
         }
+        return false;
+    }
+
+    private void handleHorizontalCollision(Barrier barrier) {
+        double barrierTop = barrier.getY() + barrier.getHeight();
+        double barrierBottom = barrier.getY();
+        double barrierLeft = barrier.getX();
+        double barrierRight = barrier.getX() + barrier.getWidth();
+
+        double x = getX();
+        double y = getY();
+        double w = getWidth();
+        double h = getHeight();
 
         double frontX = (direction == 1) ? (x + w) : x;
-        boolean hitsRight = (direction == 1 && frontX >= barrierLeft && frontX < barrierLeft + 15);
-        boolean hitsLeft  = (direction == -1 && frontX <= barrierRight && frontX > barrierRight - 15);
-        boolean verticallyInside = (y + h - 2 > barrierBottom) && (y < barrierTop - 2);
+        boolean hitsRight = (direction == 1 && frontX >= barrierLeft && frontX < barrierLeft + COLLISION_TOLERANCE);
+        boolean hitsLeft  = (direction == -1 && frontX <= barrierRight && frontX > barrierRight - COLLISION_TOLERANCE);
+        boolean verticallyInside = (y + h - CLIMB_TOLERANCE > barrierBottom) && (y < barrierTop - CLIMB_TOLERANCE);
 
         if ((hitsRight || hitsLeft) && verticallyInside) {
             changeDirection();
-            if (direction == 1) position = new Point2D(barrierRight + 1, y);
-            else position = new Point2D(barrierLeft - w - 1, y);
+            if (direction == 1) {
+                position = new Point2D(barrierRight + 1, y);
+            } else {
+                position = new Point2D(barrierLeft - w - 1, y);
+            }
         }
     }
 
@@ -217,12 +270,19 @@ public class Lemming extends Entity {
         double x = getX();
         double y = getY();
 
-        Image img = (role == Role.BLOCK) ? BLOCK_IMG : ((direction == 1) ? WALK_RIGHT : WALK_LEFT);
+        Image img = getCurrentImage();
 
         gc.save();
         gc.scale(1, -1);
         gc.drawImage(img, x, -y - height, width, height);
         gc.restore();
+    }
+
+    private Image getCurrentImage() {
+        if (role == Role.BLOCK) {
+            return BLOCK_IMG;
+        }
+        return (direction == 1) ? WALK_RIGHT : WALK_LEFT;
     }
 
     public void simulate(double deltaTime, World world) {
@@ -254,5 +314,6 @@ public class Lemming extends Entity {
     }
 
     public void onCollision(Lemming other) {
+        // Intentionally empty.
     }
 }
