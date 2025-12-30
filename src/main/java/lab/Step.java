@@ -30,10 +30,9 @@ public class Step extends Barrier {
         double w = getWidth();
         double h = getHeight();
 
-        // čtvercový tile podle kratší strany objektu
-        double tile = Math.max(1.0, Math.min(w, h));
+        double shorterSide = Math.min(w, h);
+        double tile = Math.clamp(w, 1.0, shorterSide);
 
-        // kotva v (getX,getY) zajistí stabilní "mřížku" vůči objektu
         ImagePattern pattern = new ImagePattern(STAIRS_TEX_IMG, getX(), getY(), tile, tile, false);
 
         gc.setFill(pattern);

@@ -21,19 +21,32 @@ public final class MusicSettings {
     public static Optional<Boolean> loadMusicSetting() {
         Path p = Paths.get(FILE_NAME);
         if (!Files.exists(p)) return Optional.empty();
+
         try {
             List<String> lines = Files.readAllLines(p, StandardCharsets.UTF_8);
-            for (String l : lines) {
-                if (l == null) continue;
-                String t = l.trim();
-                if (t.isEmpty()) continue;
-                if (t.equalsIgnoreCase(MUSIC_ON)) return Optional.of(true);
-                if (t.equalsIgnoreCase(MUSIC_OFF)) return Optional.of(false);
-                return Optional.empty();
+
+            for (String line : lines) {
+                Optional<String> first = firstNonBlankTrimmed(line);
+                if (first.isPresent()) {
+                    return parseMusicSetting(first.get());
+                }
             }
+
+            return Optional.empty();
         } catch (IOException e) {
             return Optional.empty();
         }
+    }
+
+    private static Optional<String> firstNonBlankTrimmed(String line) {
+        if (line == null) return Optional.empty();
+        String t = line.trim();
+        return t.isEmpty() ? Optional.empty() : Optional.of(t);
+    }
+
+    private static Optional<Boolean> parseMusicSetting(String t) {
+        if (t.equalsIgnoreCase(MUSIC_ON)) return Optional.of(true);
+        if (t.equalsIgnoreCase(MUSIC_OFF)) return Optional.of(false);
         return Optional.empty();
     }
 

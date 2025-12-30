@@ -63,7 +63,9 @@ public class MainMenuController {
             if (opt.isPresent()) {
                 musicOn = opt.get();
             }
-        } catch (Exception ignored) { }
+        } catch (Exception ignored) {
+            // Intentionally ignored: if loading the music setting fails, fall back to the default value.
+        }
 
         App.setMusicEnabled(musicOn);
         updateMuteButtonText(musicOn);

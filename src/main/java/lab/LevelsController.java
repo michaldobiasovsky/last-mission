@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class LevelsController implements StageAware {
 
@@ -30,20 +29,17 @@ public class LevelsController implements StageAware {
 
     @FXML private Button playButton;
 
-    private Stage stage;
-    private List<Level> levels;
     private Level selected;
-
     private List<Score> scores;
 
     @Override
     public void setStage(Stage stage) {
-        this.stage = stage;
+        // Stage se v tomto controlleru nepoužívá, není nutné ho ukládat do pole.
     }
 
     @FXML
     public void initialize() {
-        levels = LevelRepository.loadDefaults();
+        List<Level> levels = LevelRepository.loadDefaults();
 
         try {
             scores = ScoreRepository.load();
@@ -60,18 +56,19 @@ public class LevelsController implements StageAware {
                 if (empty || item == null) {
                     setText(null);
                     setStyle("");
-                } else {
-                    boolean isWon = isLevelWon(item.getId());
-                    String text = item.getId() + " - " + item.getName();
-
-                    if (isWon) {
-                        text += " (Completed)";
-                        setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
-                    } else {
-                        setStyle("-fx-text-fill: black;");
-                    }
-                    setText(text);
+                    return;
                 }
+
+                boolean isWon = isLevelWon(item.getId());
+                String text = item.getId() + " - " + item.getName();
+
+                if (isWon) {
+                    text += " (Completed)";
+                    setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+                } else {
+                    setStyle("-fx-text-fill: black;");
+                }
+                setText(text);
             }
         });
 
@@ -92,57 +89,101 @@ public class LevelsController implements StageAware {
         if (nameLabel == null) return;
 
         if (lvl == null) {
-            nameLabel.setText("Name: -");
-            if (totalLabel != null) totalLabel.setText("Total: -");
-            if (neededLabel != null) neededLabel.setText("Needed: -");
-            if (entryLabel != null) entryLabel.setText("Entry: -");
-            if (abilitiesLabel != null) abilitiesLabel.setText("Abilities: -");
-            if (bestTimeLabel != null) bestTimeLabel.setText("Best time: -");
+            renderEmptyDetails();
             return;
         }
 
-        nameLabel.setText("Name: " + (lvl.getName() != null ? lvl.getName() : "-"));
-        if (totalLabel != null) totalLabel.setText("Total: " + lvl.getTotalLemmings());
-        if (neededLabel != null) neededLabel.setText("Needed: " + lvl.getNeededLemmings());
+        renderBaseDetails(lvl);
+        renderEntryDetails(lvl);
+        renderAbilitiesDetails(lvl);
+        renderBestTimeDetails(lvl);
+    }
 
-        if (entryLabel != null) {
-            if (lvl.getEntryPosition() != null) {
-                entryLabel.setText("Entry: " + String.format("%.0f, %.0f",
-                    lvl.getEntryPosition().getX(), lvl.getEntryPosition().getY()));
-            } else {
-                entryLabel.setText("Entry: -");
-            }
+    private void renderEmptyDetails() {
+        nameLabel.setText("Name: -");
+        setIfPresent(totalLabel, "Total: -");
+        setIfPresent(neededLabel, "Needed: -");
+        setIfPresent(entryLabel, "Entry: -");
+        setIfPresent(abilitiesLabel, "Abilities: -");
+        setIfPresent(bestTimeLabel, "Best time: -");
+    }
+
+    private void renderBaseDetails(Level lvl) {
+        nameLabel.setText("Name: " + textOrDash(lvl.getName()));
+        setIfPresent(totalLabel, "Total: " + lvl.getTotalLemmings());
+        setIfPresent(neededLabel, "Needed: " + lvl.getNeededLemmings());
+    }
+
+    private void renderEntryDetails(Level lvl) {
+        if (entryLabel == null) return;
+        if (lvl.getEntryPosition() == null) {
+            entryLabel.setText("Entry: -");
+            return;
         }
 
-        if (abilitiesLabel != null) {
-            Map<Role, Integer> m = lvl.getAbilityCounts();
-            abilitiesLabel.setText("Abilities: " + (m == null ? "-" : m.toString()));
+        entryLabel.setText("Entry: " + String.format(
+            "%.0f, %.0f",
+            lvl.getEntryPosition().getX(),
+            lvl.getEntryPosition().getY()
+        ));
+    }
+
+    private void renderAbilitiesDetails(Level lvl) {
+        if (abilitiesLabel == null) return;
+        Map<Role, Integer> m = lvl.getAbilityCounts();
+        abilitiesLabel.setText("Abilities: " + (m == null ? "-" : m.toString()));
+    }
+
+    private void renderBestTimeDetails(Level lvl) {
+        if (bestTimeLabel == null) return;
+
+        List<Score> top = safeScores().stream()
+            .filter(s -> s.getLevel() == lvl.getId() && s.isUnlocked())
+            .sorted(Comparator.comparingLong(Score::getTime))
+            .limit(10)
+            .toList();
+
+        if (top.isEmpty()) {
+            bestTimeLabel.setText("Best time: -");
+            return;
         }
 
-        if (bestTimeLabel != null) {
-            List<Score> top = scores.stream()
-                .filter(s -> s.getLevel() == lvl.getId() && s.isUnlocked())
-                .sorted(Comparator.comparingLong(Score::getTime))
-                .limit(10)
-                .collect(Collectors.toList());
+        bestTimeLabel.setText(buildTop10Text(top));
+    }
 
-            if (top.isEmpty()) {
-                bestTimeLabel.setText("Best time: -");
-            } else {
-                StringBuilder sb = new StringBuilder();
-                sb.append("Top 10:\n");
-                int idx = 1;
-                for (Score s : top) {
-                    sb.append(String.format("%d) %s - %s\n", idx++,
-                        (s.getPlayerName() == null || s.getPlayerName().isBlank()) ? "Anonymous" : s.getPlayerName(),
-                        formatTime(s.getTime())));
-                }
-                bestTimeLabel.setText(sb.toString().trim());
-            }
+    private List<Score> safeScores() {
+        return scores == null ? List.of() : scores;
+    }
+
+    private String buildTop10Text(List<Score> top) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Top 10:").append(System.lineSeparator());
+        int idx = 1;
+        for (Score s : top) {
+            sb.append(String.format(
+                "%d) %s - %s%n",
+                idx++,
+                textOrAnonymous(s.getPlayerName()),
+                formatTime(s.getTime())
+            ));
         }
+        return sb.toString().trim();
+    }
+
+    private String textOrDash(String s) {
+        return (s == null || s.isBlank()) ? "-" : s;
+    }
+
+    private String textOrAnonymous(String s) {
+        return (s == null || s.isBlank()) ? "Anonymous" : s;
+    }
+
+    private void setIfPresent(Label label, String text) {
+        if (label != null) label.setText(text);
     }
 
     private boolean isLevelWon(int levelId) {
+        if (scores == null) return false;
         return scores.stream()
             .anyMatch(s -> s.getLevel() == levelId && s.isUnlocked());
     }
