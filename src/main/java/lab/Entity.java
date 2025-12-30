@@ -2,12 +2,11 @@ package lab;
 
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.GraphicsContext;
 
 public abstract class Entity implements Drawable, HasBoundingBox {
     protected Point2D position;
 
-    public Entity(double x, double y) {
+    protected Entity(double x, double y) {
         this.position = new Point2D(x, y);
     }
 
@@ -29,6 +28,4 @@ public abstract class Entity implements Drawable, HasBoundingBox {
     public abstract double getWidth();
     public abstract double getHeight();
 
-    @Override
-    public abstract void draw(GraphicsContext gc);
 }

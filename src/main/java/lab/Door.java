@@ -37,8 +37,10 @@ public class Door extends Entity {
     public boolean isLemmingExiting(Lemming l) {
         if (type != DoorType.EXIT) return false;
 
-        double lx = l.getX(), ly = l.getY();
-        double lw = l.getWidth(), lh = l.getHeight();
+        double lx = l.getX();
+        double ly = l.getY();
+        double lw = l.getWidth();
+        double lh = l.getHeight();
 
         boolean overlapX = lx < getX() + width && lx + lw > getX();
         boolean overlapY = ly < getY() + height && ly + lh > getY();

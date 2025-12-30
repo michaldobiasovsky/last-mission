@@ -36,8 +36,7 @@ public class Barrier extends Entity {
         double w = getWidth();
         double h = getHeight();
 
-        double tile = Math.max(1.0, Math.min(w, h));
-
+        double tile = Math.clamp(Math.min(w, h), 1.0, Double.POSITIVE_INFINITY);
         ImagePattern pattern = new ImagePattern(WALL_TEX_IMG, getX(), getY(), tile, tile, false);
 
         gc.setFill(pattern);

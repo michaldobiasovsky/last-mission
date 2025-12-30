@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-        <?import javafx.geometry.Insets?>
-        <?import javafx.scene.control.Button?>
-        <?import javafx.scene.control.Label?>
-        <?import javafx.scene.control.ListView?>
-        <?import javafx.scene.layout.BorderPane?>
-        <?import javafx.scene.layout.HBox?>
-        <?import javafx.scene.layout.Region?>
-        <?import javafx.scene.layout.VBox?>
-        <?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
 <BorderPane prefWidth="1025.0" prefHeight="769.0"
             styleClass="levels-root"
@@ -17,7 +17,10 @@
             fx:controller="lab.LevelsController">
 
     <top>
-        <HBox spacing="12.0" padding="16.0" BorderPane.alignment="CENTER">
+        <HBox spacing="12.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
+            </padding>
             <children>
                 <Button text="Zpět" onAction="#onBack"/>
                 <Region HBox.hgrow="ALWAYS"/>
@@ -32,7 +35,10 @@
     </top>
 
     <left>
-        <VBox spacing="10.0" padding="16.0" prefWidth="360.0" BorderPane.alignment="CENTER">
+        <VBox spacing="10.0" prefWidth="360.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
+            </padding>
             <children>
                 <Label text="Levely">
                     <font>
@@ -45,7 +51,10 @@
     </left>
 
     <center>
-        <VBox spacing="10.0" padding="16.0" BorderPane.alignment="CENTER">
+        <VBox spacing="10.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
+            </padding>
             <children>
                 <Label text="Podrobnosti">
                     <font>

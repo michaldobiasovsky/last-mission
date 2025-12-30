@@ -12,6 +12,8 @@ public class DrawingThread extends AnimationTimer {
     private final GraphicsContext gc;
     private final World world;
 
+    private static final boolean SHOW_FPS = false;
+
     private double x = 0;
     private double y = 50;
     private double speedX = 150;
@@ -33,7 +35,10 @@ public class DrawingThread extends AnimationTimer {
         gc.clearRect(0,0,canvas.getWidth(), canvas.getHeight());
         world.draw(gc);
 
-        drawFps(delta);
+        if (SHOW_FPS) {
+            drawFps(delta);
+        }
+
         world.simulate(delta);
         x += delta * speedX;
         y += delta * speedY;
