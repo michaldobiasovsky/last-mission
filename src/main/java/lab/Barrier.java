@@ -1,11 +1,15 @@
 package lab;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
+import javafx.scene.image.Image;
+import javafx.scene.paint.ImagePattern;
 
 public class Barrier extends Entity {
     private final double width;
     private final double height;
+
+    private static final Image WALL_TEX_IMG =
+        new Image(Barrier.class.getResourceAsStream("/lab/texture.jpg"));
 
     public Barrier(double x, double y, double width, double height) {
         super(x, y);
@@ -29,7 +33,14 @@ public class Barrier extends Entity {
 
     @Override
     public void draw(GraphicsContext gc) {
-        gc.setFill(Color.BROWN);
-        gc.fillRect(getX(), getY(), width, height);
+        double w = getWidth();
+        double h = getHeight();
+
+        double tile = Math.max(1.0, Math.min(w, h));
+
+        ImagePattern pattern = new ImagePattern(WALL_TEX_IMG, getX(), getY(), tile, tile, false);
+
+        gc.setFill(pattern);
+        gc.fillRect(getX(), getY(), w, h);
     }
 }
