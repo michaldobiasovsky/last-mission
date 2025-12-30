@@ -1,5 +1,3 @@
-// java
-// `src/main/java/lab/World.java`
 package lab;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -35,7 +33,7 @@ public class World {
         w.getDoors().addAll(level.getDoors());
 
         if (level.getTotalLemmings() > 0) {
-            w.spawnFromEntry(level.getTotalLemmings(), 1.0);
+            w.spawnFromEntry(level.getTotalLemmings(), 1.7);
         }
         return w;
     }
@@ -49,6 +47,14 @@ public class World {
         Door entry = doors.stream().filter(d -> d.getType() == DoorType.ENTRY).findFirst().orElse(null);
         if (entry == null || count <= 0 || intervalSeconds <= 0) return;
         spawnRequests.add(new SpawnRequest(entry, count, intervalSeconds));
+    }
+
+    public boolean isOutOfLemmings() {
+        if (!lemmings.isEmpty()) return false;
+        for (SpawnRequest req : spawnRequests) {
+            if (req.remaining > 0) return false;
+        }
+        return true;
     }
 
     private static class SpawnRequest {
@@ -100,7 +106,6 @@ public class World {
             l.simulate(deltaTime, this);
         }
 
-        // \- lemmingy, kteří úspěšně odešli exitem
         List<Lemming> exited = new ArrayList<>();
         for (Lemming l : lemmings) {
             for (Door d : doors) {

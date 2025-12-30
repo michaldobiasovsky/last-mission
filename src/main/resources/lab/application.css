@@ -1,26 +1,19 @@
-/* css */
-/* src/main/resources/lab/application.css */
-
-/* \- nech jako výchozí (např\. menu) */
 .root {
-    -fx-background-image: url("intro.png");
+    -fx-background-color: white;
+}
+
+.mainmenu-root {
+    -fx-background-color: white;
+    -fx-background-image: url("/lab/intro.png");
     -fx-background-repeat: no-repeat;
     -fx-background-position: center center;
     -fx-background-size: cover;
 }
 
-/* \- výběr levelů: jiné pozadí */
 .levels-root {
-    -fx-background-image: url("levels.png");
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center center;
-    -fx-background-size: cover;
+    -fx-background-color: white;
 }
 
-/* \- detail levelu: jiné pozadí */
 .details-root {
-    -fx-background-image: url("level_details.png");
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center center;
-    -fx-background-size: cover;
+    -fx-background-color: white;
 }

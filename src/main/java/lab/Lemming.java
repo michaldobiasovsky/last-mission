@@ -1,4 +1,3 @@
-// src/main/java/lab/Lemming.java
 package lab;
 
 import javafx.geometry.Point2D;
@@ -11,7 +10,7 @@ public class Lemming extends Entity {
     private static final double SCALE = 0.7;
 
     private static final double GRAVITY = 400;
-    public static volatile double speedMultiplier = 1.0;
+    public static volatile double speedMultiplier = 0.8;
 
     private static final Image WALK_RIGHT = new Image(Lemming.class.getResourceAsStream("/lab/cosmo_right.gif"));
     private static final Image WALK_LEFT = new Image(Lemming.class.getResourceAsStream("/lab/cosmo_left.gif"));
@@ -28,9 +27,12 @@ public class Lemming extends Entity {
     private double directionCooldown = 0;
     private static final double DIRECTION_COOLDOWN_SEC = 0.15;
 
+    private boolean onGround = false;
+
+    private boolean onFloor = false;
+
     public Lemming(double x, double y) {
         super(x, y);
-        // Výpočet rozměrů podle obrázku a měřítka
         this.width = WALK_RIGHT.getWidth() * SCALE;
         this.height = WALK_RIGHT.getHeight() * SCALE;
 
@@ -66,13 +68,18 @@ public class Lemming extends Entity {
         position = position.add(dist * direction, 0);
     }
 
-    public void becomeBlock() {
+    public boolean becomeBlock() {
+        if (!onGround) return false;
         this.role = Role.BLOCK;
         this.velocityY = 0;
+        return true;
     }
 
-    public void buildStairs(World world, int steps) {
-        if (steps <= 0) return;
+    public boolean buildStairs(World world, int steps) {
+        if (role == Role.BLOCK) return false; // BLOCK nesmí stavět
+        if (steps <= 0) return false;
+        if (!onFloor) return false;
+
         double startX = getX();
         double startY = getY();
         double overlapX = 5;
@@ -81,19 +88,23 @@ public class Lemming extends Entity {
         double stepWidth = width * 0.5;
         double stepHeight = height * 0.5;
 
+        boolean builtAny = false;
+
         for (int i = 0; i < totalSteps; i++) {
             double xi = startX + direction * (i + 1) * (stepWidth - overlapX / 2);
             double yi = startY + (i * stepHeight);
 
             boolean exists = world.getBarriers().stream()
                 .anyMatch(b -> Math.abs(b.getX() - xi) < stepWidth && Math.abs(b.getY() - yi) < stepHeight * 0.5);
+
             if (!exists) {
                 world.getBarriers().add(new Step(xi, yi, stepWidth, stepHeight, direction));
+                builtAny = true;
             }
         }
+
+        return builtAny;
     }
-
-
     public void checkCollisionWithBarrier(Barrier barrier, World world) {
         double x = getX();
         double y = getY();
@@ -116,13 +127,12 @@ public class Lemming extends Entity {
             boolean canClimb = (direction == stepDir);
 
             double heightDifference = barrierTop - y;
-
             boolean isTooHigh = heightDifference > 15;
 
             if (canClimb && !isTooHigh && y < barrierTop && y + h > barrierBottom) {
-
                 double targetY = barrierTop;
                 Rectangle2D targetBox = new Rectangle2D(x, targetY, w, h);
+
                 boolean isCeilingBlocked = world.getBarriers().stream()
                     .filter(b -> !b.isStep())
                     .anyMatch(b -> b.getBoundingBox().intersects(targetBox));
@@ -130,10 +140,10 @@ public class Lemming extends Entity {
                 if (!isCeilingBlocked) {
                     position = new Point2D(x, barrierTop);
                     velocityY = 0;
+                    onGround = true;
                     return;
                 }
             }
-
         }
 
         if (velocityY > 0) {
@@ -141,6 +151,11 @@ public class Lemming extends Entity {
             if (penetration > 0 && y < barrierBottom) {
                 position = new Point2D(x, barrierBottom - h);
                 velocityY = 0;
+
+                onGround = true;
+                if (!barrier.isStep()) {
+                    onFloor = true;
+                }
                 return;
             }
         }
@@ -150,6 +165,11 @@ public class Lemming extends Entity {
             if (overlap > 0 && overlap < h * 0.6) {
                 position = new Point2D(x, barrierTop);
                 velocityY = 0;
+
+                onGround = true;
+                if (!barrier.isStep()) {
+                    onFloor = true;
+                }
                 return;
             }
         }
@@ -182,11 +202,8 @@ public class Lemming extends Entity {
 
         if (y + height - 2 > oy && y < oy + oh - 2) {
             changeDirection();
-            if (direction == 1) {
-                position = new Point2D(ox + ow + 1, y);
-            } else {
-                position = new Point2D(ox - width - 1, y);
-            }
+            if (direction == 1) position = new Point2D(ox + ow + 1, y);
+            else position = new Point2D(ox - width - 1, y);
         }
 
         if (velocityY <= 0 && y < oy + oh && y + height > oy + oh) {
@@ -217,6 +234,9 @@ public class Lemming extends Entity {
             velocityY = 0;
             return;
         }
+
+        onGround = false;
+        onFloor = false;
 
         move(speedX * speedMultiplier * deltaTime);
         velocityY -= GRAVITY * deltaTime;

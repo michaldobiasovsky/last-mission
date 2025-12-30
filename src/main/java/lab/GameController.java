@@ -118,14 +118,12 @@ public class GameController implements StageAware {
         if (level != null && level.getAbilityCounts() != null) {
             abilityCounts.putAll(level.getAbilityCounts());
         } else {
-            // default if no level
             abilityCounts.put(Role.BLOCK, 0);
             abilityCounts.put(Role.BUILD, 0);
             abilityCounts.put(Role.KILL, 0);
         }
 
         updateAbilityButtons();
-
         applyLevelBackground(level);
 
         timer = new DrawingThread(canvas, world);
@@ -139,7 +137,6 @@ public class GameController implements StageAware {
         if (root == null) return;
 
         String imagePath = "/lab/level1.png";
-
         if (level != null && level.getBackgroundImagePath() != null) {
             imagePath = level.getBackgroundImagePath();
         }
@@ -166,20 +163,23 @@ public class GameController implements StageAware {
 
         switch (selectedRole) {
             case BLOCK:
-                if (decrementAbility(Role.BLOCK)) {
-                    target.becomeBlock();
+                if (abilityCounts.getOrDefault(Role.BLOCK, 0) > 0 && target.becomeBlock()) {
+                    decrementAbility(Role.BLOCK);
                 }
                 break;
+
             case BUILD:
-                if (decrementAbility(Role.BUILD)) {
-                    target.buildStairs(world, 6);
+                if (abilityCounts.getOrDefault(Role.BUILD, 0) > 0 && target.buildStairs(world, 6)) {
+                    decrementAbility(Role.BUILD);
                 }
                 break;
+
             case KILL:
                 if (decrementAbility(Role.KILL)) {
                     world.getLemmings().remove(target);
                 }
                 break;
+
             default:
                 break;
         }
@@ -216,7 +216,52 @@ public class GameController implements StageAware {
 
         if (!levelFinished && needed > 0 && exited >= needed) {
             finishLevel();
+            return;
         }
+
+        boolean outOfLemmings = (world != null) && world.isOutOfLemmings();
+        if (!levelFinished && needed > 0 && exited < needed && onTrack == 0 && outOfLemmings) {
+            failLevel();
+        }
+    }
+
+    private void failLevel() {
+        if (levelFinished) return;
+        levelFinished = true;
+
+        if (timer != null) timer.stop();
+        if (uiUpdater != null) uiUpdater.stop();
+
+        javafx.application.Platform.runLater(() -> {
+            javafx.scene.control.ButtonType retryButton = new javafx.scene.control.ButtonType("Retry");
+            javafx.scene.control.ButtonType closeButton = new javafx.scene.control.ButtonType("Close");
+
+            javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = new javafx.scene.control.Dialog<>();
+            dialog.setTitle("Level failed");
+            dialog.setHeaderText("You lost! No lemmings left.");
+
+            Image iconImage = new Image(getClass().getResourceAsStream("/lab/stay.gif"));
+            ImageView imageView = new ImageView(iconImage);
+            imageView.setFitHeight(48);
+            imageView.setFitWidth(48);
+            dialog.setGraphic(imageView);
+
+            dialog.getDialogPane().getButtonTypes().setAll(retryButton, closeButton);
+
+            try {
+                Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+                dialogStage.getIcons().add(iconImage);
+            } catch (Exception ignored) { }
+
+            Optional<javafx.scene.control.ButtonType> result = dialog.showAndWait();
+
+            if (result.isPresent() && result.get() == retryButton) {
+                levelFinished = false;
+                startLevel(currentLevelObj);
+            } else {
+                App.showMainMenu();
+            }
+        });
     }
 
     private String formatTime(long ms) {
