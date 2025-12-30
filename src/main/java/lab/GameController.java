@@ -93,7 +93,7 @@ public class GameController implements StageAware {
     }
 
     @FXML
-    void stop(javafx.event.ActionEvent event) {
+    void onStop(javafx.event.ActionEvent event) {
         stop();
         App.showMainMenu();
     }

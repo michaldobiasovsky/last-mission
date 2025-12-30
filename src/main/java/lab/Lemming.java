@@ -4,26 +4,46 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import javafx.scene.media.AudioClip;
+
 import java.io.InputStream;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Lemming extends Entity {
+
+    private static final Logger logger = Logger.getLogger(Lemming.class.getName());
 
     private static final double SCALE = 0.7;
     private static final double GRAVITY = 400;
 
     private static final double SPEED_MULTIPLIER = 0.8;
 
+    private static final double SOUND_VOLUME = 0.2;
+
     private static Image loadImage(String path) {
         InputStream stream = Lemming.class.getResourceAsStream(path);
         if (stream == null) {
-            throw new IllegalArgumentException("Obrázek nebyl nalezen: " + path);
+            throw new IllegalArgumentException("Image not found: " + path);
         }
         return new Image(stream);
+    }
+
+    private static AudioClip loadSound(String path) {
+        URL url = Lemming.class.getResource(path);
+        if (url == null) {
+            logger.log(Level.SEVERE, "Sound not found: {0}", path);
+            return null;
+        }
+        return new AudioClip(url.toExternalForm());
     }
 
     private static final Image WALK_RIGHT = loadImage("/lab/cosmo_right.gif");
     private static final Image WALK_LEFT = loadImage("/lab/cosmo_left.gif");
     private static final Image BLOCK_IMG = loadImage("/lab/stop.gif");
+
+    private static final AudioClip WEE_SOUND = loadSound("/lab/wee.mp3");
 
     private static final double COLLISION_TOLERANCE = 15.0;
     private static final double CLIMB_TOLERANCE = 2.0;
@@ -41,6 +61,10 @@ public class Lemming extends Entity {
 
     private boolean onGround = false;
     private boolean onFloor = false;
+
+    private boolean hasScreamed = false;
+
+    private boolean hasTouchedGroundOnce = false;
 
     public Lemming(double x, double y) {
         super(x, y);
@@ -309,6 +333,13 @@ public class Lemming extends Entity {
         velocityY -= GRAVITY * deltaTime;
         position = position.add(0, velocityY * deltaTime);
 
+        if (velocityY < -150 && !onGround && !hasScreamed && hasTouchedGroundOnce) {
+            if (WEE_SOUND != null) {
+                WEE_SOUND.play(SOUND_VOLUME);
+            }
+            hasScreamed = true;
+        }
+
         for (Barrier barrier : world.getBarriers()) {
             checkCollisionWithBarrier(barrier, world);
         }
@@ -317,6 +348,11 @@ public class Lemming extends Entity {
             if (other != this) {
                 checkCollisionWithLemming(other);
             }
+        }
+
+        if (onGround) {
+            hasScreamed = false;
+            hasTouchedGroundOnce = true;
         }
     }
 }
