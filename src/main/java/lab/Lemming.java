@@ -77,26 +77,33 @@ public class Lemming extends Entity {
         double startY = getY();
         double overlapX = 5;
 
-        for (int i = 0; i < steps; i++) {
-            double xi = startX + direction * (i + 1) * (width - overlapX / 2);
-            double yi = startY + (i * height);
+        int totalSteps = steps;
+        double stepWidth = width * 0.5;
+        double stepHeight = height * 0.5;
+
+        for (int i = 0; i < totalSteps; i++) {
+            double xi = startX + direction * (i + 1) * (stepWidth - overlapX / 2);
+            double yi = startY + (i * stepHeight);
 
             boolean exists = world.getBarriers().stream()
-                .anyMatch(b -> Math.abs(b.getX() - xi) < width && Math.abs(b.getY() - yi) < height * 0.5);
+                .anyMatch(b -> Math.abs(b.getX() - xi) < stepWidth && Math.abs(b.getY() - yi) < stepHeight * 0.5);
             if (!exists) {
-                world.getBarriers().add(new Step(xi, yi, width, height, direction));
+                world.getBarriers().add(new Step(xi, yi, stepWidth, stepHeight, direction));
             }
         }
     }
 
+
     public void checkCollisionWithBarrier(Barrier barrier, World world) {
         double x = getX();
         double y = getY();
+        double w = getWidth();
+        double h = getHeight();
 
-        boolean overlapX = x < barrier.getX() + barrier.getWidth() && x + width > barrier.getX();
-        boolean overlapY = y < barrier.getY() + barrier.getHeight() && y + height > barrier.getY();
-
-        if (!overlapX || !overlapY) return;
+        if (x >= barrier.getX() + barrier.getWidth() || x + w <= barrier.getX() ||
+            y >= barrier.getY() + barrier.getHeight() || y + h <= barrier.getY()) {
+            return;
+        }
 
         double barrierTop = barrier.getY() + barrier.getHeight();
         double barrierBottom = barrier.getY();
@@ -108,53 +115,54 @@ public class Lemming extends Entity {
             int stepDir = step.getStepDirection();
             boolean canClimb = (direction == stepDir);
 
-            if (canClimb && y < barrierTop && y + height > barrierBottom) {
-                position = new Point2D(x, barrierTop);
-                velocityY = 0;
-                return;
-            }
+            double heightDifference = barrierTop - y;
 
-            if (velocityY <= 0) {
-                double overlap = barrierTop - y;
-                if (overlap > 0 && overlap < height * 0.6) {
+            boolean isTooHigh = heightDifference > 15;
+
+            if (canClimb && !isTooHigh && y < barrierTop && y + h > barrierBottom) {
+
+                double targetY = barrierTop;
+                Rectangle2D targetBox = new Rectangle2D(x, targetY, w, h);
+                boolean isCeilingBlocked = world.getBarriers().stream()
+                    .filter(b -> !b.isStep())
+                    .anyMatch(b -> b.getBoundingBox().intersects(targetBox));
+
+                if (!isCeilingBlocked) {
                     position = new Point2D(x, barrierTop);
                     velocityY = 0;
                     return;
                 }
             }
 
-            if (!canClimb) {
-                double frontX = direction == 1 ? x + width : x;
-                boolean hitsWall = (direction == 1 && frontX >= barrierLeft && frontX <= barrierLeft + 10)
-                    || (direction == -1 && frontX <= barrierRight && frontX >= barrierRight - 10);
+        }
 
-                if (hitsWall && y + height - 2 > barrierBottom && y < barrierTop - 2) {
-                    changeDirection();
-                }
+        if (velocityY > 0) {
+            double penetration = (y + h) - barrierBottom;
+            if (penetration > 0 && y < barrierBottom) {
+                position = new Point2D(x, barrierBottom - h);
+                velocityY = 0;
+                return;
             }
-            return;
         }
 
         if (velocityY <= 0) {
             double overlap = barrierTop - y;
-            if (overlap > 0 && overlap < height * 0.6) {
+            if (overlap > 0 && overlap < h * 0.6) {
                 position = new Point2D(x, barrierTop);
                 velocityY = 0;
                 return;
             }
         }
 
-        double frontX = direction == 1 ? x + width : x;
-        boolean hitsWall = (direction == 1 && frontX >= barrierLeft && frontX <= barrierLeft + 10)
-            || (direction == -1 && frontX <= barrierRight && frontX >= barrierRight - 10);
+        double frontX = (direction == 1) ? (x + w) : x;
+        boolean hitsRight = (direction == 1 && frontX >= barrierLeft && frontX < barrierLeft + 15);
+        boolean hitsLeft  = (direction == -1 && frontX <= barrierRight && frontX > barrierRight - 15);
+        boolean verticallyInside = (y + h - 2 > barrierBottom) && (y < barrierTop - 2);
 
-        if (hitsWall && y + height - 2 > barrierBottom && y < barrierTop - 2) {
+        if ((hitsRight || hitsLeft) && verticallyInside) {
             changeDirection();
-            if (direction == 1) {
-                position = new Point2D(barrierRight + 1, y);
-            } else {
-                position = new Point2D(barrierLeft - width - 1, y);
-            }
+            if (direction == 1) position = new Point2D(barrierRight + 1, y);
+            else position = new Point2D(barrierLeft - w - 1, y);
         }
     }
 

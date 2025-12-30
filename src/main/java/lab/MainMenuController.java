@@ -17,8 +17,8 @@ public class MainMenuController {
     @FXML private Button startButton;
     @FXML private Button exitButton;
     @FXML private Button levelsButton;
-    @FXML private Button loginButton;
     @FXML private Button resetScoreButton;
+    @FXML private Button muteButton;
 
     @FXML
     void startGame(ActionEvent event) {
@@ -34,16 +34,6 @@ public class MainMenuController {
         App.showLevelsSelection();
     }
 
-    @FXML
-    void login(ActionEvent event) {
-        Protection.checkAndApply(success -> {
-            if (Protection.isVerified()) {
-                loginButton.setText("Přihlášen: " + Protection.getVerifiedName().orElse(""));
-            } else {
-                loginButton.setText("Přihlásit");
-            }
-        });
-    }
 
     @FXML
     void resetScores(ActionEvent event) {
@@ -64,17 +54,37 @@ public class MainMenuController {
     @FXML
     void initialize() {
         assert exitButton != null : "fx:id=\"exitButton\" was not injected: check your FXML file 'mainMenu.fxml'.";
-        assert loginButton != null : "fx:id=\"loginButton\" was not injected: check your FXML file 'mainMenu.fxml'.";
         assert startButton != null : "fx:id=\"startButton\" was not injected: check your FXML file 'mainMenu.fxml'.";
 
-        if (Protection.isVerified()) {
-            loginButton.setText("Přihlášen: " + Protection.getVerifiedName().orElse(""));
-            startButton.setDisable(false);
-        } else {
-            loginButton.setText("Přihlásit");
-            startButton.setDisable(false);
+
+        boolean musicOn = true;
+        try {
+            var opt = MusicSettings.loadMusicSetting();
+            if (opt.isPresent()) {
+                musicOn = opt.get();
+            }
+        } catch (Exception ignored) { }
+
+        App.setMusicEnabled(musicOn);
+        updateMuteButtonText(musicOn);
+    }
+
+    private void updateMuteButtonText(boolean musicOn) {
+        if (muteButton != null) {
+            muteButton.setText(musicOn ? "MUSIC ON" : "MUSIC OFF");
         }
-        updateStartButtonText();
+    }
+
+    @FXML
+    private void toggleMusic(ActionEvent event) {
+        boolean newState = !App.isMusicEnabled();
+        App.setMusicEnabled(newState);
+        updateMuteButtonText(newState);
+        try {
+            MusicSettings.saveMusicSetting(newState);
+        } catch (ScoreException e) {
+            e.printStackTrace();
+        }
     }
 
     private void updateStartButtonText() {

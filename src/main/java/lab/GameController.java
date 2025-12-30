@@ -172,7 +172,7 @@ public class GameController implements StageAware {
                 break;
             case BUILD:
                 if (decrementAbility(Role.BUILD)) {
-                    target.buildStairs(world, 3);
+                    target.buildStairs(world, 6);
                 }
                 break;
             case KILL:

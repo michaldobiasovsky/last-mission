@@ -5,44 +5,48 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" prefHeight="769.0" prefWidth="1025.0" spacing="20.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lab.MainMenuController">
+<VBox alignment="CENTER" prefHeight="769.0" prefWidth="1025.0" spacing="16.0" style="-fx-padding: 32 40 32 40;" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lab.MainMenuController">
+
+    <!-- explicit padding (alternativa ke style) -->
     <padding>
-        <Insets bottom="40" left="40" right="40" top="40" />
+        <Insets bottom="32" left="40" right="40" top="32" />
     </padding>
 
-    <Button fx:id="startButton" mnemonicParsing="false" onAction="#startGame" prefWidth="200" text="Start">
-        <font><Font size="24" /></font>
-      <VBox.margin>
-         <Insets right="500.0" top="100.0" />
-      </VBox.margin>
+    <Button fx:id="startButton" mnemonicParsing="false" onAction="#startGame" prefWidth="260" text="Start">
+        <font><Font size="28" /></font>
+        <VBox.margin>
+            <Insets right="500.0" top="100.0" />
+        </VBox.margin>
     </Button>
-    <Button fx:id="levelsButton" mnemonicParsing="false" onAction="#showLevels" prefWidth="200" text="Levels">
+
+    <Button fx:id="levelsButton" mnemonicParsing="false" onAction="#showLevels" prefWidth="240" text="Levels">
+        <font><Font size="20" /></font>
+        <VBox.margin>
+            <Insets right="500.0" />
+        </VBox.margin>
+    </Button>
+
+    <Button fx:id="resetScoreButton" mnemonicParsing="false" onAction="#resetScores" prefWidth="240" text="Reset score">
         <font><Font size="18" /></font>
-      <VBox.margin>
-         <Insets right="500.0" />
-      </VBox.margin>
+        <VBox.margin>
+            <Insets right="500.0" />
+        </VBox.margin>
     </Button>
-    <Button fx:id="loginButton" mnemonicParsing="false" onAction="#login" prefWidth="200" text="Login">
+
+    <Button fx:id="exitButton" mnemonicParsing="false" onAction="#exitApp" prefWidth="240" text="Exit">
         <font><Font size="18" /></font>
+        <VBox.margin>
+            <Insets right="500.0" />
+        </VBox.margin>
+    </Button>
+
+          <Button fx:id="muteButton" mnemonicParsing="false" onAction="#toggleMusic" prefHeight="45.0" prefWidth="135.0" text="MUSIC ON">
+        <font>
+         <Font size="20" />
+      </font>
       <VBox.margin>
-         <Insets right="500.0" />
+         <Insets left="500.0" top="100.0" />
       </VBox.margin>
     </Button>
-    <Button fx:id="resetScoreButton" mnemonicParsing="false" onAction="#resetScores" prefWidth="200" text="Reset score">
-        <font><Font size="18" /></font>
-      <VBox.margin>
-         <Insets right="500.0" />
-      </VBox.margin>
-    </Button>
-    <Button fx:id="exitButton" mnemonicParsing="false" onAction="#exitApp" prefWidth="200" text="Exit">
-        <font><Font size="18" /></font>
-      <VBox.margin>
-         <Insets right="500.0" />
-      </VBox.margin>
-    </Button>
-   <Button mnemonicParsing="false" text="MUTE">
-      <VBox.margin>
-         <Insets left="600.0" top="50.0" />
-      </VBox.margin>
-   </Button>
+
 </VBox>

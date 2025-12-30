@@ -1,4 +1,3 @@
-// src/main/java/lab/App.java
 package lab;
 
 import javafx.application.Application;
@@ -20,6 +19,8 @@ public class App extends Application {
 
     private static Stage primaryStage;
     private static MediaPlayer musicPlayer;
+    private static boolean musicEnabled = true;
+
     private GameController gameController;
 
     public static Stage getPrimaryStage() {
@@ -63,7 +64,6 @@ public class App extends Application {
                 sa.setStage(primaryStage);
             }
 
-            // Scéna má požadovanou velikost obsahu
             Scene scene = new Scene(root, APP_WIDTH, APP_HEIGHT);
             applyCommonSceneStyles(scene);
 
@@ -113,7 +113,6 @@ public class App extends Application {
             FXMLLoader menuLoader = new FXMLLoader(getClass().getResource("/lab/mainMenu.fxml"));
             Parent root = menuLoader.load();
 
-            // Vytvoříme scénu s přesnou velikostí obsahu
             Scene scene = new Scene(root, APP_WIDTH, APP_HEIGHT);
             applyCommonSceneStyles(scene);
 
@@ -128,7 +127,6 @@ public class App extends Application {
 
             applyCommonStageSettings(primaryStage);
 
-            // Důležité pro první spuštění:
             primaryStage.sizeToScene();
 
             primaryStage.show();
@@ -138,9 +136,12 @@ public class App extends Application {
         }
     }
 
-    private void playBackgroundMusic() {
+    private static void playBackgroundMusic() {
         try {
-            URL musicResource = getClass().getResource("/lab/cosmo.mp3");
+            if (!musicEnabled) return;
+            if (musicPlayer != null) return; // už běží
+
+            URL musicResource = App.class.getResource("/lab/cosmo.mp3");
 
             if (musicResource != null) {
                 Media media = new Media(musicResource.toExternalForm());
@@ -156,8 +157,29 @@ public class App extends Application {
         }
     }
 
+    public static void setMusicEnabled(boolean enabled) {
+        musicEnabled = enabled;
+        if (enabled) {
+            playBackgroundMusic();
+        } else {
+            if (musicPlayer != null) {
+                try {
+                    musicPlayer.stop();
+                } catch (Exception ignored) { }
+                musicPlayer = null;
+            }
+        }
+    }
+
+    public static boolean isMusicEnabled() {
+        return musicEnabled;
+    }
+
     @Override
     public void stop() throws Exception {
+        if (musicPlayer != null) {
+            try { musicPlayer.stop(); } catch (Exception ignored) {}
+        }
         if (gameController != null) {
             gameController.stop();
         }
