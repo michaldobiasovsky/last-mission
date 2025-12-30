@@ -4,23 +4,32 @@ import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import java.io.InputStream;
 
 public class Lemming extends Entity {
 
     private static final double SCALE = 0.7;
     private static final double GRAVITY = 400;
 
-    private static volatile double speedMultiplier = 0.8;
+    private static final double SPEED_MULTIPLIER = 0.8;
 
-    private static final Image WALK_RIGHT = new Image(Lemming.class.getResourceAsStream("/lab/cosmo_right.gif"));
-    private static final Image WALK_LEFT = new Image(Lemming.class.getResourceAsStream("/lab/cosmo_left.gif"));
-    private static final Image BLOCK_IMG = new Image(Lemming.class.getResourceAsStream("/lab/stop.gif"));
+    private static Image loadImage(String path) {
+        InputStream stream = Lemming.class.getResourceAsStream(path);
+        if (stream == null) {
+            throw new IllegalArgumentException("Obrázek nebyl nalezen: " + path);
+        }
+        return new Image(stream);
+    }
+
+    private static final Image WALK_RIGHT = loadImage("/lab/cosmo_right.gif");
+    private static final Image WALK_LEFT = loadImage("/lab/cosmo_left.gif");
+    private static final Image BLOCK_IMG = loadImage("/lab/stop.gif");
 
     private static final double COLLISION_TOLERANCE = 15.0;
     private static final double CLIMB_TOLERANCE = 2.0;
 
-    private final double width;
-    private final double height;
+    private double width;
+    private double height;
 
     private Role role;
     private int direction;
@@ -35,21 +44,12 @@ public class Lemming extends Entity {
 
     public Lemming(double x, double y) {
         super(x, y);
-        this.width = WALK_RIGHT.getWidth() * SCALE;
-        this.height = WALK_RIGHT.getHeight() * SCALE;
-
         this.direction = 1;
         this.velocityY = 0;
         this.role = Role.DEFAULT;
         this.speedX = 40;
-    }
-
-    public static double getSpeedMultiplier() {
-        return speedMultiplier;
-    }
-
-    public static void setSpeedMultiplier(double speed) {
-        speedMultiplier = speed;
+        this.width = WALK_RIGHT.getWidth() * SCALE;
+        this.height = WALK_RIGHT.getHeight() * SCALE;
     }
 
     @Override
@@ -60,10 +60,8 @@ public class Lemming extends Entity {
 
     @Override
     public Rectangle2D getBoundingBox() {
-        return new Rectangle2D(getX(), getY(), width, height);
+        return new Rectangle2D(getX(), getY(), getWidth(), getHeight());
     }
-
-    public int getDirection() { return direction; }
 
     public void changeDirection() {
         if (directionCooldown > 0) return;
@@ -72,7 +70,15 @@ public class Lemming extends Entity {
     }
 
     public Role getRole() { return role; }
-    public void setRole(Role r) { this.role = r; }
+    public void setRole(Role r) {
+        this.role = r;
+        if (r == Role.BLOCK) {
+            this.width = BLOCK_IMG.getWidth() * SCALE;
+        } else {
+            this.width = WALK_RIGHT.getWidth() * SCALE;
+            this.height = WALK_RIGHT.getHeight() * SCALE;
+        }
+    }
 
     public void move(double dist) {
         position = position.add(dist * direction, 0);
@@ -80,7 +86,7 @@ public class Lemming extends Entity {
 
     public boolean becomeBlock() {
         if (!onGround) return false;
-        this.role = Role.BLOCK;
+        setRole(Role.BLOCK);
         this.velocityY = 0;
         return true;
     }
@@ -94,13 +100,12 @@ public class Lemming extends Entity {
         double startY = getY();
         double overlapX = 5;
 
-        int totalSteps = steps;
-        double stepWidth = width * 0.5;
-        double stepHeight = height * 0.5;
+        double stepWidth = getWidth() * 0.5;
+        double stepHeight = getHeight() * 0.5;
 
         boolean builtAny = false;
 
-        for (int i = 0; i < totalSteps; i++) {
+        for (int i = 0; i < steps; i++) {
             double xi = startX + direction * (i + 1) * (stepWidth - overlapX / 2);
             double yi = startY + (i * stepHeight);
 
@@ -159,8 +164,7 @@ public class Lemming extends Entity {
         boolean isTooHigh = heightDifference > COLLISION_TOLERANCE;
 
         if (canClimb && !isTooHigh && y < barrierTop && y + h > barrierBottom) {
-            double targetY = barrierTop;
-            Rectangle2D targetBox = new Rectangle2D(getX(), targetY, getWidth(), h);
+            Rectangle2D targetBox = new Rectangle2D(getX(), barrierTop, getWidth(), h);
 
             boolean isCeilingBlocked = world.getBarriers().stream()
                 .filter(b -> !b.isStep())
@@ -249,17 +253,20 @@ public class Lemming extends Entity {
         double ow = other.getWidth();
         double oh = other.getHeight();
 
-        boolean overlapX = x < ox + ow && x + width > ox;
-        boolean overlapY = y < oy + oh && y + height > oy;
+        double w = getWidth();
+        double h = getHeight();
+
+        boolean overlapX = x < ox + ow && x + w > ox;
+        boolean overlapY = y < oy + oh && y + h > oy;
         if (!overlapX || !overlapY) return;
 
-        if (y + height - 2 > oy && y < oy + oh - 2) {
+        if (y + h - 2 > oy && y < oy + oh - 2) {
             changeDirection();
             if (direction == 1) position = new Point2D(ox + ow + 1, y);
-            else position = new Point2D(ox - width - 1, y);
+            else position = new Point2D(ox - w - 1, y);
         }
 
-        if (velocityY <= 0 && y < oy + oh && y + height > oy + oh) {
+        if (velocityY <= 0 && y < oy + oh && y + h > oy + oh) {
             position = new Point2D(x, oy + oh);
             velocityY = 0;
         }
@@ -274,7 +281,7 @@ public class Lemming extends Entity {
 
         gc.save();
         gc.scale(1, -1);
-        gc.drawImage(img, x, -y - height, width, height);
+        gc.drawImage(img, x, -y - height, getWidth(), getHeight());
         gc.restore();
     }
 
@@ -298,7 +305,7 @@ public class Lemming extends Entity {
         onGround = false;
         onFloor = false;
 
-        move(speedX * speedMultiplier * deltaTime);
+        move(speedX * SPEED_MULTIPLIER * deltaTime);
         velocityY -= GRAVITY * deltaTime;
         position = position.add(0, velocityY * deltaTime);
 
@@ -311,9 +318,5 @@ public class Lemming extends Entity {
                 checkCollisionWithLemming(other);
             }
         }
-    }
-
-    public void onCollision(Lemming other) {
-        // Intentionally empty.
     }
 }

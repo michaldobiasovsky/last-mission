@@ -12,7 +12,7 @@
 
 <BorderPane prefWidth="1025.0" prefHeight="769.0"
             styleClass="levels-root"
-            xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns="http://javafx.com/javafx/23"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="lab.LevelsController">
 
@@ -21,7 +21,6 @@
             <padding>
                 <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
             </padding>
-            <children>
                 <Button text="Zpět" onAction="#onBack"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label text="Výběr levelu">
@@ -30,7 +29,6 @@
                     </font>
                 </Label>
                 <Region HBox.hgrow="ALWAYS"/>
-            </children>
         </HBox>
     </top>
 
@@ -39,14 +37,12 @@
             <padding>
                 <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
             </padding>
-            <children>
                 <Label text="Levely">
                     <font>
                         <Font name="System Bold" size="18.0"/>
                     </font>
                 </Label>
                 <ListView fx:id="levelList" VBox.vgrow="ALWAYS"/>
-            </children>
         </VBox>
     </left>
 
@@ -55,7 +51,6 @@
             <padding>
                 <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
             </padding>
-            <children>
                 <Label text="Podrobnosti">
                     <font>
                         <Font name="System Bold" size="18.0"/>
@@ -63,21 +58,18 @@
                 </Label>
 
                 <VBox spacing="6.0">
-                    <children>
                         <Label fx:id="nameLabel" text="Name: \u2013"/>
                         <Label fx:id="totalLabel" text="Total: \u2013"/>
                         <Label fx:id="neededLabel" text="Needed: \u2013"/>
                         <Label fx:id="entryLabel" text="Entry: \u2013"/>
                         <Label fx:id="abilitiesLabel" text="Abilities: \u2013"/>
                         <Label fx:id="bestTimeLabel" text="Best time: \u2013"/>
-                    </children>
                 </VBox>
 
                 <Region VBox.vgrow="ALWAYS"/>
 
                 <Button fx:id="playButton" text="Hrát" onAction="#onPlay" disable="true"
                         prefHeight="48.0" maxWidth="1.7976931348623157E308"/>
-            </children>
         </VBox>
     </center>
 

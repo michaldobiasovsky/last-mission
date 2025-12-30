@@ -10,9 +10,9 @@
 <VBox prefWidth="1025.0" prefHeight="769.0"
       spacing="12.0"
       styleClass="details-root"
-      xmlns="http://javafx.com/javafx/23.0.1"
+      xmlns="http://javafx.com/javafx/23"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="lab.LevelDetailsController">
+      fx:controller="lab.LevelsController">
 
     <padding>
         <Insets top="24.0" right="24.0" bottom="24.0" left="24.0"/>

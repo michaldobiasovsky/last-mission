@@ -12,7 +12,7 @@
 
 <BorderPane prefWidth="1025.0" prefHeight="769.0"
             styleClass="levels-root"
-            xmlns="http://javafx.com/javafx/23.0.1"
+            xmlns="http://javafx.com/javafx/23"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="lab.LevelsController">
 
