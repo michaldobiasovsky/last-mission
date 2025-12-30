@@ -3,11 +3,15 @@ package lab;
 import javafx.geometry.Point2D;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
 public final class LevelRepository {
+
+    private LevelRepository() {
+        // Utility class; prevent instantiation.
+    }
 
     public static List<Level> loadDefaults() {
         List<Level> levels = new ArrayList<>();
@@ -21,7 +25,7 @@ public final class LevelRepository {
         doors0.add(new Door(10, 20, DoorType.ENTRY));
         doors0.add(new Door(700, 20, DoorType.EXIT));
 
-        Map<Role, Integer> abilities0 = new HashMap<>();
+        Map<Role, Integer> abilities0 = new EnumMap<>(Role.class);
         abilities0.put(Role.BLOCK, 3);
         abilities0.put(Role.BUILD, 2);
         abilities0.put(Role.KILL, 1);
@@ -56,7 +60,7 @@ public final class LevelRepository {
         doors1.add(new Door(8, 30, DoorType.ENTRY));
         doors1.add(new Door(729, 30, DoorType.EXIT));
 
-        Map<Role, Integer> abilities1 = new HashMap<>();
+        Map<Role, Integer> abilities1 = new EnumMap<>(Role.class);
         abilities1.put(Role.BLOCK, 1);
         abilities1.put(Role.BUILD, 4);
         abilities1.put(Role.KILL, 5);
@@ -79,7 +83,7 @@ public final class LevelRepository {
         barriers2.add(new Barrier(0, 580, 800, 20));
         barriers2.add(new Barrier(300, 520, 200, 20));
 
-        Map<Role, Integer> abilities2 = new HashMap<>();
+        Map<Role, Integer> abilities2 = new EnumMap<>(Role.class);
         abilities2.put(Role.BLOCK, 1);
         abilities2.put(Role.BUILD, 4);
         abilities2.put(Role.KILL, 0);
@@ -102,7 +106,7 @@ public final class LevelRepository {
         barriers3.add(new Barrier(0, 100, 1025, 20)); // Podlaha
         barriers3.add(new Barrier(400, 300, 20, 200)); // Zeď
 
-        Map<Role, Integer> abilities3 = new HashMap<>();
+        Map<Role, Integer> abilities3 = new EnumMap<>(Role.class);
         abilities3.put(Role.BLOCK, 5);
         abilities3.put(Role.BUILD, 5);
         abilities3.put(Role.KILL, 5);
@@ -141,7 +145,7 @@ public final class LevelRepository {
         doors4.add(new Door(891, 30, DoorType.EXIT));
         doors4.add(new Door(27, 30, DoorType.ENTRY));
 
-        Map<Role, Integer> abilities4 = new HashMap<>();
+        Map<Role, Integer> abilities4 = new EnumMap<>(Role.class);
         abilities4.put(Role.BLOCK, 5);
         abilities4.put(Role.BUILD, 5);
         abilities4.put(Role.KILL, 5);
