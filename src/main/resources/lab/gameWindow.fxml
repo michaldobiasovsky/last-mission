@@ -87,29 +87,29 @@
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                     </HBox.margin>
                 </Button>
-                <Label fx:id="LemmingsCount" alignment="CENTER" maxWidth="1.7976931348623157E308" text="LemmingsCount" textFill="WHITE" HBox.hgrow="ALWAYS">
+                <Label fx:id="lemmingsCount" alignment="CENTER" maxWidth="1.7976931348623157E308" text="LemmingsCount" textFill="WHITE" HBox.hgrow="ALWAYS">
                     <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                     </HBox.margin>
-               <font>
-                  <Font size="17.0" />
-               </font>
+                    <font>
+                        <Font size="17.0" />
+                    </font>
                 </Label>
                 <Label fx:id="time" alignment="CENTER" maxWidth="1.7976931348623157E308" text="Time" textFill="WHITE" HBox.hgrow="ALWAYS">
                     <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                     </HBox.margin>
-               <font>
-                  <Font size="17.0" />
-               </font>
+                    <font>
+                        <Font size="17.0" />
+                    </font>
                 </Label>
-                <Label fx:id="NeadedLemmings" alignment="CENTER" maxWidth="1.7976931348623157E308" text="NeadedLemmings" textFill="WHITE" HBox.hgrow="ALWAYS">
+                <Label fx:id="neededLemmings" alignment="CENTER" maxWidth="1.7976931348623157E308" text="NeadedLemmings" textFill="WHITE" HBox.hgrow="ALWAYS">
                     <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                     </HBox.margin>
-               <font>
-                  <Font size="17.0" />
-               </font>
+                    <font>
+                        <Font size="17.0" />
+                    </font>
                 </Label>
             </children>
         </HBox>

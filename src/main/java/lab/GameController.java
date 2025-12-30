@@ -18,12 +18,14 @@ import lab.score.ScoreRepository;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class GameController implements StageAware {
+
+    private static final String DEFAULT_LEVEL_IMAGE = "/lab/level1.png";
 
     @FXML private BorderPane root;
     @FXML private Canvas canvas;
@@ -32,11 +34,9 @@ public class GameController implements StageAware {
     @FXML private Button buildBtn;
     @FXML private Button killBtn;
 
-    @FXML private Label LemmingsCount;
+    @FXML private Label lemmingsCount;
     @FXML private Label time;
-    @FXML private Label NeadedLemmings;
-
-    private Stage stage;
+    @FXML private Label neededLemmings;
 
     private World world;
     private DrawingThread timer;
@@ -45,7 +45,7 @@ public class GameController implements StageAware {
     private Role selectedRole = null;
 
     private Level currentLevelObj;
-    private final Map<Role, Integer> abilityCounts = new HashMap<>();
+    private final Map<Role, Integer> abilityCounts = new EnumMap<>(Role.class);
     private List<Score> scores = new ArrayList<>();
 
     private long levelStartTime = 0;
@@ -53,7 +53,7 @@ public class GameController implements StageAware {
 
     @Override
     public void setStage(Stage stage) {
-        this.stage = stage;
+        // Stage reference removed as it was unused
     }
 
     @FXML
@@ -136,7 +136,7 @@ public class GameController implements StageAware {
     private void applyLevelBackground(Level level) {
         if (root == null) return;
 
-        String imagePath = "/lab/level1.png";
+        String imagePath = DEFAULT_LEVEL_IMAGE;
         if (level != null && level.getBackgroundImagePath() != null) {
             imagePath = level.getBackgroundImagePath();
         }
@@ -179,9 +179,9 @@ public class GameController implements StageAware {
                     world.getLemmings().remove(target);
                 }
                 break;
-
             default:
                 break;
+
         }
         updateAbilityButtons();
     }
@@ -205,14 +205,14 @@ public class GameController implements StageAware {
 
     private void updateUi() {
         int onTrack = (world != null) ? world.getLemmings().size() : 0;
-        LemmingsCount.setText("On track: " + onTrack);
+        lemmingsCount.setText("On track: " + onTrack);
 
         long elapsed = (levelStartTime > 0) ? (System.currentTimeMillis() - levelStartTime) : 0;
         time.setText("Time: " + formatTime(elapsed));
 
         int needed = (currentLevelObj != null) ? currentLevelObj.getNeededLemmings() : 0;
         int exited = (world != null) ? world.getExitedCount() : 0;
-        NeadedLemmings.setText("Goal: " + exited + "/" + needed);
+        neededLemmings.setText("Goal: " + exited + "/" + needed);
 
         if (!levelFinished && needed > 0 && exited >= needed) {
             finishLevel();
@@ -228,40 +228,116 @@ public class GameController implements StageAware {
     private void failLevel() {
         if (levelFinished) return;
         levelFinished = true;
+        stop();
+        javafx.application.Platform.runLater(this::showLevelFailedDialog);
+    }
 
-        if (timer != null) timer.stop();
-        if (uiUpdater != null) uiUpdater.stop();
+    private void showLevelFailedDialog() {
+        javafx.scene.control.ButtonType retryButton = new javafx.scene.control.ButtonType("Retry");
+        javafx.scene.control.ButtonType closeButton = new javafx.scene.control.ButtonType("Close");
 
-        javafx.application.Platform.runLater(() -> {
-            javafx.scene.control.ButtonType retryButton = new javafx.scene.control.ButtonType("Retry");
-            javafx.scene.control.ButtonType closeButton = new javafx.scene.control.ButtonType("Close");
+        javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = createBaseDialog(
+            "Level failed",
+            "You lost! No lemmings left."
+        );
+        dialog.getDialogPane().getButtonTypes().setAll(retryButton, closeButton);
 
-            javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = new javafx.scene.control.Dialog<>();
-            dialog.setTitle("Level failed");
-            dialog.setHeaderText("You lost! No lemmings left.");
+        Optional<javafx.scene.control.ButtonType> result = dialog.showAndWait();
 
-            Image iconImage = new Image(getClass().getResourceAsStream("/lab/stay.gif"));
-            ImageView imageView = new ImageView(iconImage);
-            imageView.setFitHeight(48);
-            imageView.setFitWidth(48);
-            dialog.setGraphic(imageView);
+        if (result.isPresent() && result.get() == retryButton) {
+            levelFinished = false;
+            startLevel(currentLevelObj);
+        } else {
+            App.showMainMenu();
+        }
+    }
 
+    private void finishLevel() {
+        if (levelFinished) return;
+        levelFinished = true;
+        stop();
+        javafx.application.Platform.runLater(this::showLevelCompletedDialog);
+    }
+
+    private void showLevelCompletedDialog() {
+        final long timeTaken = System.currentTimeMillis() - levelStartTime;
+        String timeStr = formatTime(timeTaken);
+
+        javafx.scene.control.ButtonType retryButton = new javafx.scene.control.ButtonType("Retry");
+        javafx.scene.control.ButtonType nextButton = new javafx.scene.control.ButtonType("Next level");
+        javafx.scene.control.ButtonType closeButton = new javafx.scene.control.ButtonType("Close");
+
+        javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = createBaseDialog(
+            "Level completed",
+            "Congratulations! Level completed."
+        );
+
+        Level next = findNextLevel();
+        if (next != null) {
+            dialog.getDialogPane().getButtonTypes().setAll(retryButton, nextButton, closeButton);
+        } else {
             dialog.getDialogPane().getButtonTypes().setAll(retryButton, closeButton);
+        }
 
-            try {
-                Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        TextField nameField = setupScoreInput(dialog, timeStr);
+        Optional<javafx.scene.control.ButtonType> result = dialog.showAndWait();
+
+        String playerName = (nameField.getText() != null && !nameField.getText().trim().isEmpty())
+            ? nameField.getText().trim()
+            : "Anonymous";
+
+        onLevelCompleted(playerName, timeTaken);
+
+        handleLevelCompletionResult(result, retryButton, nextButton, next);
+    }
+
+    private TextField setupScoreInput(javafx.scene.control.Dialog<?> dialog, String timeStr) {
+        String defaultName = Protection.getVerifiedName().orElse("");
+        Label info = new Label("Your time: " + timeStr + "\nEnter player name for the leaderboard:");
+        TextField nameField = new TextField(defaultName);
+
+        VBox content = new VBox(8);
+        content.getChildren().addAll(info, nameField);
+        dialog.getDialogPane().setContent(content);
+        return nameField;
+    }
+
+    private void handleLevelCompletionResult(Optional<javafx.scene.control.ButtonType> result,
+                                             javafx.scene.control.ButtonType retryBtn,
+                                             javafx.scene.control.ButtonType nextBtn,
+                                             Level nextLevel) {
+        if (result.isPresent() && result.get() == retryBtn) {
+            levelFinished = false;
+            startLevel(currentLevelObj);
+        } else if (result.isPresent() && nextLevel != null && result.get() == nextBtn) {
+            levelFinished = false;
+            startLevel(nextLevel);
+        } else {
+            App.showMainMenu();
+        }
+    }
+
+    private javafx.scene.control.Dialog<javafx.scene.control.ButtonType> createBaseDialog(String title, String header) {
+        javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle(title);
+        dialog.setHeaderText(header);
+
+        Image iconImage = new Image(getClass().getResourceAsStream("/lab/stay.gif"));
+        ImageView imageView = new ImageView(iconImage);
+        imageView.setFitHeight(48);
+        imageView.setFitWidth(48);
+        dialog.setGraphic(imageView);
+
+        try {
+            Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
+            if (dialogStage != null) {
                 dialogStage.getIcons().add(iconImage);
-            } catch (Exception ignored) { }
-
-            Optional<javafx.scene.control.ButtonType> result = dialog.showAndWait();
-
-            if (result.isPresent() && result.get() == retryButton) {
-                levelFinished = false;
-                startLevel(currentLevelObj);
-            } else {
-                App.showMainMenu();
             }
-        });
+        } catch (ClassCastException | NullPointerException ignored) {
+            // Best-effort: setting the dialog icon is not critical.
+        }
+
+        return dialog;
     }
 
     private String formatTime(long ms) {
@@ -303,70 +379,5 @@ public class GameController implements StageAware {
         } catch (ScoreException e) {
             e.printStackTrace();
         }
-    }
-
-    private void finishLevel() {
-        if (levelFinished) return;
-        levelFinished = true;
-
-        if (timer != null) timer.stop();
-        if (uiUpdater != null) uiUpdater.stop();
-
-        javafx.application.Platform.runLater(() -> {
-            final long timeTaken = System.currentTimeMillis() - levelStartTime;
-            String timeStr = formatTime(timeTaken);
-
-            javafx.scene.control.ButtonType retryButton = new javafx.scene.control.ButtonType("Retry");
-            javafx.scene.control.ButtonType nextButton = new javafx.scene.control.ButtonType("Next level");
-            javafx.scene.control.ButtonType closeButton = new javafx.scene.control.ButtonType("Close");
-
-            javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = new javafx.scene.control.Dialog<>();
-            dialog.setTitle("Level completed");
-            dialog.setHeaderText("Congratulations! Level completed.");
-
-            Image iconImage = new Image(getClass().getResourceAsStream("/lab/stay.gif"));
-            ImageView imageView = new ImageView(iconImage);
-            imageView.setFitHeight(48);
-            imageView.setFitWidth(48);
-            dialog.setGraphic(imageView);
-
-            Level next = findNextLevel();
-            if (next != null) {
-                dialog.getDialogPane().getButtonTypes().setAll(retryButton, nextButton, closeButton);
-            } else {
-                dialog.getDialogPane().getButtonTypes().setAll(retryButton, closeButton);
-            }
-
-            String defaultName = Protection.getVerifiedName().orElse("");
-            Label info = new Label("Your time: " + timeStr + "\nEnter player name for the leaderboard:");
-            TextField nameField = new TextField(defaultName);
-
-            VBox content = new VBox(8);
-            content.getChildren().addAll(info, nameField);
-            dialog.getDialogPane().setContent(content);
-
-            try {
-                Stage dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
-                dialogStage.getIcons().add(iconImage);
-            } catch (Exception ignored) { }
-
-            Optional<javafx.scene.control.ButtonType> result = dialog.showAndWait();
-
-            String playerName = nameField.getText() != null && !nameField.getText().trim().isEmpty()
-                ? nameField.getText().trim()
-                : "Anonymous";
-
-            onLevelCompleted(playerName, timeTaken);
-
-            if (result.isPresent() && result.get() == retryButton) {
-                levelFinished = false;
-                startLevel(currentLevelObj);
-            } else if (result.isPresent() && next != null && result.get() == nextButton) {
-                levelFinished = false;
-                startLevel(next);
-            } else {
-                App.showMainMenu();
-            }
-        });
     }
 }
