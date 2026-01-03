@@ -150,22 +150,26 @@ public final class LevelRepository {
 
 
 
-// level 5 - First Step
+
+// level 5 - Last Step
         List<Barrier> barriers5 = new ArrayList<>();
-        barriers5.add(new Barrier(847, 460, 165, 20));
+        barriers5.add(new Barrier(848, 310, 169, 20));
+        barriers5.add(new Barrier(16, 460, 177, 20));
+        barriers5.add(new Barrier(311, 310, 136, 20));
+        barriers5.add(new Barrier(540, 160, 251, 20));
 
         List<Door> doors5 = new ArrayList<>();
-        doors5.add(new Door(888, 480, DoorType.EXIT));
         doors5.add(new Door(84, 480, DoorType.ENTRY));
+        doors5.add(new Door(897, 330, DoorType.EXIT));
 
         Map<Role, Integer> abilities5 = new EnumMap<>(Role.class);
-        abilities5.put(Role.BLOCK, 1);
-        abilities5.put(Role.BUILD, 4);
+        abilities5.put(Role.BLOCK, 0);
+        abilities5.put(Role.BUILD, 3);
         abilities5.put(Role.KILL, 5);
 
         Level l5 = new Level(
             5,
-            "First Step",
+            "Last Step",
             "/lab/level5.png",
             20,
             15,
@@ -175,6 +179,7 @@ public final class LevelRepository {
             abilities5
         );
         levels.add(l5);
+
 
 
 

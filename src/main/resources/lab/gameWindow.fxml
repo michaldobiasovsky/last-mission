@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 
-<BorderPane fx:id="root" prefHeight="770.0" prefWidth="1025.0" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lab.GameController">
+<BorderPane fx:id="root" prefHeight="770.0" prefWidth="1025.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lab.GameController">
     <bottom>
         <HBox alignment="TOP_CENTER" spacing="40.0" BorderPane.alignment="CENTER">
             <Button fx:id="blockBtn" mnemonicParsing="false" onAction="#block" style="-fx-background-color: RED; -fx-font-size: 20px;" text="Block" textAlignment="CENTER">
@@ -58,29 +58,29 @@
         </HBox>
     </bottom>
     <center>
-        <Canvas fx:id="canvas" height="640.0" width="1025.0" BorderPane.alignment="CENTER">
+        <Canvas fx:id="canvas" height="679.0" width="1025.0" BorderPane.alignment="CENTER">
             <BorderPane.margin>
                 <Insets />
             </BorderPane.margin>
         </Canvas>
     </center>
     <top>
-        <HBox minHeight="-Infinity" prefHeight="45.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-            <Button fx:id="stop" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" text="Stop" HBox.hgrow="ALWAYS">                    <HBox.margin>
+        <HBox minHeight="-Infinity" prefHeight="35.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <Button fx:id="stop" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" prefHeight="25.0" prefWidth="67.0" text="Stop" HBox.hgrow="ALWAYS">                    <HBox.margin>
                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
             </HBox.margin>
             </Button>
-            <Label fx:id="lemmingsCount" alignment="CENTER" maxWidth="1.7976931348623157E308" text="LemmingsCount" textFill="WHITE" HBox.hgrow="ALWAYS" style="-fx-font-size: 17px;">
+            <Label fx:id="lemmingsCount" alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-size: 17px;" text="LemmingsCount" textFill="WHITE" HBox.hgrow="ALWAYS">
                 <HBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </HBox.margin>
             </Label>
-            <Label fx:id="time" alignment="CENTER" maxWidth="1.7976931348623157E308" text="Time" textFill="WHITE" HBox.hgrow="ALWAYS" style="-fx-font-size: 17px;">
+            <Label fx:id="time" alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-size: 17px;" text="Time" textFill="WHITE" HBox.hgrow="ALWAYS">
                 <HBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </HBox.margin>
             </Label>
-            <Label fx:id="neededLemmings" alignment="CENTER" maxWidth="1.7976931348623157E308" text="NeadedLemmings" textFill="WHITE" HBox.hgrow="ALWAYS" style="-fx-font-size: 17px;">
+            <Label fx:id="neededLemmings" alignment="CENTER" maxWidth="1.7976931348623157E308" style="-fx-font-size: 17px;" text="NeadedLemmings" textFill="WHITE" HBox.hgrow="ALWAYS">
                 <HBox.margin>
                     <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                 </HBox.margin>
