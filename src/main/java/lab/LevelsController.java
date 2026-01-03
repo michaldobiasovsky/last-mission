@@ -23,7 +23,6 @@ public class LevelsController implements StageAware {
     @FXML private Label nameLabel;
     @FXML private Label totalLabel;
     @FXML private Label neededLabel;
-    @FXML private Label entryLabel;
     @FXML private Label abilitiesLabel;
     @FXML private Label bestTimeLabel;
 
@@ -94,7 +93,6 @@ public class LevelsController implements StageAware {
         }
 
         renderBaseDetails(lvl);
-        renderEntryDetails(lvl);
         renderAbilitiesDetails(lvl);
         renderBestTimeDetails(lvl);
     }
@@ -103,7 +101,6 @@ public class LevelsController implements StageAware {
         nameLabel.setText("Name: -");
         setIfPresent(totalLabel, "Total: -");
         setIfPresent(neededLabel, "Needed: -");
-        setIfPresent(entryLabel, "Entry: -");
         setIfPresent(abilitiesLabel, "Abilities: -");
         setIfPresent(bestTimeLabel, "Best time: -");
     }
@@ -114,25 +111,23 @@ public class LevelsController implements StageAware {
         setIfPresent(neededLabel, "Needed: " + lvl.getNeededLemmings());
     }
 
-    private void renderEntryDetails(Level lvl) {
-        if (entryLabel == null) return;
-        if (lvl.getEntryPosition() == null) {
-            entryLabel.setText("Entry: -");
+    private void renderAbilitiesDetails(Level lvl) {
+        if (abilitiesLabel == null) return;
+
+        Map<Role, Integer> abilities = lvl.getAbilityCounts();
+        if (abilities == null) {
+            abilitiesLabel.setText("Abilities: -");
             return;
         }
 
-        entryLabel.setText("Entry: " + String.format(
-            "%.0f, %.0f",
-            lvl.getEntryPosition().getX(),
-            lvl.getEntryPosition().getY()
-        ));
+        StringBuilder sb = new StringBuilder("Abilities: ");
+        sb.append("Block ").append(abilities.getOrDefault(Role.BLOCK, 0));
+        sb.append(", Build ").append(abilities.getOrDefault(Role.BUILD, 0));
+        sb.append(", Kill ").append(abilities.getOrDefault(Role.KILL, 0));
+
+        abilitiesLabel.setText(sb.toString());
     }
 
-    private void renderAbilitiesDetails(Level lvl) {
-        if (abilitiesLabel == null) return;
-        Map<Role, Integer> m = lvl.getAbilityCounts();
-        abilitiesLabel.setText("Abilities: " + (m == null ? "-" : m.toString()));
-    }
 
     private void renderBestTimeDetails(Level lvl) {
         if (bestTimeLabel == null) return;
@@ -204,10 +199,5 @@ public class LevelsController implements StageAware {
     @FXML
     private void onBack() {
         App.showMainMenu();
-    }
-
-    @FXML
-    private void onClose() {
-        onBack();
     }
 }

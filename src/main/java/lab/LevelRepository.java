@@ -16,61 +16,28 @@ public final class LevelRepository {
     public static List<Level> loadDefaults() {
         List<Level> levels = new ArrayList<>();
 
-        // level 1
-        List<Barrier> barriers0 = new ArrayList<>();
-        barriers0.add(new Barrier(5, 10, 800, 20));
-        barriers0.add(new Barrier(200, 500, 100, 20));
-
-        List<Door> doors0 = new ArrayList<>();
-        doors0.add(new Door(10, 20, DoorType.ENTRY));
-        doors0.add(new Door(700, 20, DoorType.EXIT));
-
-        Map<Role, Integer> abilities0 = new EnumMap<>(Role.class);
-        abilities0.put(Role.BLOCK, 3);
-        abilities0.put(Role.BUILD, 2);
-        abilities0.put(Role.KILL, 1);
-
-        Level l0 = new Level(
-            0,
-            "Tutorial",
-            "/lab/level1.png", // Cesta k pozadí pro Level 1
-            10,
-            5,
-            new Point2D(60, 500),
-            barriers0,
-            doors0,
-            abilities0
-        );
-        levels.add(l0);
 
 
-        // level 1 - First Step
+        // level 1 - First steps
         List<Barrier> barriers1 = new ArrayList<>();
-        barriers1.add(new Barrier(546, 10, 248, 20));
-        barriers1.add(new Barrier(1, 10, 182, 20));
-        barriers1.add(new Barrier(231, 160, 164, 20));
-        barriers1.add(new Barrier(521, 310, 120, 20));
-        barriers1.add(new Barrier(49, 310, 123, 20));
-        barriers1.add(new Barrier(238, 460, 269, 20));
-        barriers1.add(new Barrier(350, 470, 20, 80));
-        barriers1.add(new Barrier(49, 327, 20, 154));
-        barriers1.add(new Barrier(774, 20, 20, 307));
+        barriers1.add(new Barrier(18, 10, 307, 20));
+        barriers1.add(new Barrier(396, 160, 591, 20));
 
         List<Door> doors1 = new ArrayList<>();
-        doors1.add(new Door(8, 30, DoorType.ENTRY));
-        doors1.add(new Door(729, 30, DoorType.EXIT));
+        doors1.add(new Door(30, 30, DoorType.ENTRY));
+        doors1.add(new Door(887, 180, DoorType.EXIT));
 
         Map<Role, Integer> abilities1 = new EnumMap<>(Role.class);
-        abilities1.put(Role.BLOCK, 1);
-        abilities1.put(Role.BUILD, 4);
-        abilities1.put(Role.KILL, 5);
+        abilities1.put(Role.BLOCK, 2);
+        abilities1.put(Role.BUILD, 1);
+        abilities1.put(Role.KILL, 2);
 
         Level l1 = new Level(
             1,
-            "First Step",
+            "First steps",
             "/lab/level1.png",
-            15,
-            20,
+            10,
+            5,
             new Point2D(50, 50),
             barriers1,
             doors1,
@@ -78,57 +45,75 @@ public final class LevelRepository {
         );
         levels.add(l1);
 
-        // level 2
+
+
+
+
+        // level 2 - Deep Dive
         List<Barrier> barriers2 = new ArrayList<>();
-        barriers2.add(new Barrier(0, 580, 800, 20));
-        barriers2.add(new Barrier(300, 520, 200, 20));
+        barriers2.add(new Barrier(59, 10, 834, 20));
+        barriers2.add(new Barrier(396, 310, 494, 20));
+        barriers2.add(new Barrier(874, 9, 20, 321));
+
+        List<Door> doors2 = new ArrayList<>();
+        doors2.add(new Door(473, 330, DoorType.ENTRY));
+        doors2.add(new Door(639, 30, DoorType.EXIT));
 
         Map<Role, Integer> abilities2 = new EnumMap<>(Role.class);
-        abilities2.put(Role.BLOCK, 1);
-        abilities2.put(Role.BUILD, 4);
-        abilities2.put(Role.KILL, 0);
+        abilities2.put(Role.BLOCK, 2);
+        abilities2.put(Role.BUILD, 0);
+        abilities2.put(Role.KILL, 2);
 
         Level l2 = new Level(
             2,
-            "Stairs",
-            "/lab/level2.png", // Cesta k pozadí pro Level 2
+            "Deep Dive",
+            "/lab/level2.png",
             15,
-            8,
-            new Point2D(40, 500),
+            5,
+            new Point2D(50, 50),
             barriers2,
-            new ArrayList<>(),
+            doors2,
             abilities2
         );
         levels.add(l2);
 
-        // level 3
+
+
+        // level 3 - Stairs
         List<Barrier> barriers3 = new ArrayList<>();
-        barriers3.add(new Barrier(0, 100, 1025, 20)); // Podlaha
-        barriers3.add(new Barrier(400, 300, 20, 200)); // Zeď
+        barriers3.add(new Barrier(191, 13, 20, 163));
+        barriers3.add(new Barrier(191, 160, 178, 20));
+        barriers3.add(new Barrier(354, 162, 20, 166));
+        barriers3.add(new Barrier(355, 310, 189, 20));
+        barriers3.add(new Barrier(524, 313, 20, 166));
+        barriers3.add(new Barrier(523, 460, 168, 20));
+        barriers3.add(new Barrier(14, 10, 999, 20));
+
+        List<Door> doors3 = new ArrayList<>();
+        doors3.add(new Door(23, 30, DoorType.ENTRY));
+        doors3.add(new Door(464, 30, DoorType.EXIT));
 
         Map<Role, Integer> abilities3 = new EnumMap<>(Role.class);
-        abilities3.put(Role.BLOCK, 5);
-        abilities3.put(Role.BUILD, 5);
-        abilities3.put(Role.KILL, 5);
+        abilities3.put(Role.BLOCK, 1);
+        abilities3.put(Role.BUILD, 3);
+        abilities3.put(Role.KILL, 1);
 
         Level l3 = new Level(
             3,
-            "Hardcore",
-            "/lab/level3.png", // Cesta k pozadí pro Level 3
-            20,
-            15,
-            new Point2D(50, 600),
+            "Stairs",
+            "/lab/level3.png",
+            5,
+            3,
+            new Point2D(50, 50),
             barriers3,
-            new ArrayList<>(),
+            doors3,
             abilities3
         );
         levels.add(l3);
 
 
 
-
-
-        // level 4 - Level 4
+// level 4 - Broken space
         List<Barrier> barriers4 = new ArrayList<>();
         barriers4.add(new Barrier(774, 10, 211, 20));
         barriers4.add(new Barrier(17, 10, 167, 20));
@@ -137,8 +122,8 @@ public final class LevelRepository {
         barriers4.add(new Barrier(251, 760, 606, 20));
         barriers4.add(new Barrier(9, 610, 196, 20));
         barriers4.add(new Barrier(9, 310, 20, 319));
-        barriers4.add(new Barrier(711, 310, 82, 20));
-        barriers4.add(new Barrier(290, 160, 191, 20));
+        barriers4.add(new Barrier(660, 310, 82, 20));
+        barriers4.add(new Barrier(270, 160, 191, 20));
         barriers4.add(new Barrier(442, 466, 20, 143));
 
         List<Door> doors4 = new ArrayList<>();
@@ -152,8 +137,8 @@ public final class LevelRepository {
 
         Level l4 = new Level(
             4,
-            "Level 4",
-            "/lab/level2.png",
+            "Broken space",
+            "/lab/level4.png",
             15,
             5,
             new Point2D(50, 50),
@@ -162,6 +147,34 @@ public final class LevelRepository {
             abilities4
         );
         levels.add(l4);
+
+
+
+// level 5 - First Step
+        List<Barrier> barriers5 = new ArrayList<>();
+        barriers5.add(new Barrier(847, 460, 165, 20));
+
+        List<Door> doors5 = new ArrayList<>();
+        doors5.add(new Door(888, 480, DoorType.EXIT));
+        doors5.add(new Door(84, 480, DoorType.ENTRY));
+
+        Map<Role, Integer> abilities5 = new EnumMap<>(Role.class);
+        abilities5.put(Role.BLOCK, 1);
+        abilities5.put(Role.BUILD, 4);
+        abilities5.put(Role.KILL, 5);
+
+        Level l5 = new Level(
+            5,
+            "First Step",
+            "/lab/level5.png",
+            20,
+            15,
+            new Point2D(50, 50),
+            barriers5,
+            doors5,
+            abilities5
+        );
+        levels.add(l5);
 
 
 

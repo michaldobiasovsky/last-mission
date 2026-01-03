@@ -238,7 +238,7 @@ public class GameController implements StageAware {
 
         javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = createBaseDialog(
             "Level failed",
-            "You lost! No lemmings left."
+            "You lost! No astronauts left."
         );
         dialog.getDialogPane().getButtonTypes().setAll(retryButton, closeButton);
 
@@ -318,9 +318,12 @@ public class GameController implements StageAware {
 
     private javafx.scene.control.Dialog<javafx.scene.control.ButtonType> createBaseDialog(String title, String header) {
         javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = new javafx.scene.control.Dialog<>();
+        dialog.initStyle(javafx.stage.StageStyle.UNDECORATED);
+
         dialog.setTitle(title);
         dialog.setHeaderText(header);
 
+        dialog.getDialogPane().getStylesheets().add(App.class.getResource("/lab/application.css").toExternalForm());
         Image iconImage = new Image(getClass().getResourceAsStream("/lab/stay.gif"));
         ImageView imageView = new ImageView(iconImage);
         imageView.setFitHeight(48);

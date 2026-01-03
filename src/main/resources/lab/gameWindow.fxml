@@ -7,67 +7,54 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.text.Font?>
 
 <BorderPane fx:id="root" prefHeight="770.0" prefWidth="1025.0" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lab.GameController">
     <bottom>
         <HBox alignment="TOP_CENTER" spacing="40.0" BorderPane.alignment="CENTER">
-                <Button fx:id="blockBtn" mnemonicParsing="false" onAction="#block" style="-fx-background-color: RED;" text="Block" textAlignment="CENTER">
-                    <font>
-                        <Font name="System Bold" size="24.0" />
-                    </font>
-                    <cursor>
-                        <Cursor fx:constant="CROSSHAIR" />
-                    </cursor>
-                    <opaqueInsets>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                    </opaqueInsets>
-                    <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin>
-                </Button>
-                <Button fx:id="buildBtn" mnemonicParsing="false" onAction="#build" style="-fx-background-color: RED;" text="Build" textAlignment="CENTER">
-                    <font>
-                        <Font name="System Bold" size="24.0" />
-                    </font>
-                    <cursor>
-                        <Cursor fx:constant="CROSSHAIR" />
-                    </cursor>
-                    <opaqueInsets>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                    </opaqueInsets>
-                    <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin>
-                </Button>
-                <Button fx:id="killBtn" mnemonicParsing="false" onAction="#kill" style="-fx-background-color: RED;" text="Kill" textAlignment="CENTER">
-                    <font>
-                        <Font name="System Bold" size="24.0" />
-                    </font>
-                    <cursor>
-                        <Cursor fx:constant="CROSSHAIR" />
-                    </cursor>
-                    <opaqueInsets>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                    </opaqueInsets>
-                    <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin>
-                </Button>
-                <Button mnemonicParsing="false" onAction="#reset" style="-fx-background-color: RED;" text="RESET" textAlignment="CENTER" textFill="WHITE">
-                    <font>
-                        <Font name="System Bold" size="24.0" />
-                    </font>
-                    <cursor>
-                        <Cursor fx:constant="CROSSHAIR" />
-                    </cursor>
-                    <opaqueInsets>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                    </opaqueInsets>
-                    <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin>
-                </Button>
+            <Button fx:id="blockBtn" mnemonicParsing="false" onAction="#block" style="-fx-background-color: RED; -fx-font-size: 20px;" text="Block" textAlignment="CENTER">
+                <cursor>
+                    <Cursor fx:constant="CROSSHAIR" />
+                </cursor>
+                <opaqueInsets>
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </opaqueInsets>
+                <HBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                </HBox.margin>
+            </Button>
+            <Button fx:id="buildBtn" mnemonicParsing="false" onAction="#build" style="-fx-background-color: RED; -fx-font-size: 20px;" text="Build" textAlignment="CENTER">
+                <cursor>
+                    <Cursor fx:constant="CROSSHAIR" />
+                </cursor>
+                <opaqueInsets>
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </opaqueInsets>
+                <HBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                </HBox.margin>
+            </Button>
+            <Button fx:id="killBtn" mnemonicParsing="false" onAction="#kill" style="-fx-background-color: RED; -fx-font-size: 20px;" text="Kill" textAlignment="CENTER">
+                <cursor>
+                    <Cursor fx:constant="CROSSHAIR" />
+                </cursor>
+                <opaqueInsets>
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </opaqueInsets>
+                <HBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                </HBox.margin>
+            </Button>
+            <Button mnemonicParsing="false" onAction="#reset" style="-fx-background-color: RED; -fx-font-size: 20px;" text="RESET" textAlignment="CENTER" textFill="WHITE">
+                <cursor>
+                    <Cursor fx:constant="CROSSHAIR" />
+                </cursor>
+                <opaqueInsets>
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </opaqueInsets>
+                <HBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                </HBox.margin>
+            </Button>
         </HBox>
     </bottom>
     <center>
@@ -80,33 +67,24 @@
     <top>
         <HBox minHeight="-Infinity" prefHeight="45.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <Button fx:id="stop" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" text="Stop" HBox.hgrow="ALWAYS">                    <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin>
-                </Button>
-                <Label fx:id="lemmingsCount" alignment="CENTER" maxWidth="1.7976931348623157E308" text="LemmingsCount" textFill="WHITE" HBox.hgrow="ALWAYS">
-                    <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin>
-                    <font>
-                        <Font size="17.0" />
-                    </font>
-                </Label>
-                <Label fx:id="time" alignment="CENTER" maxWidth="1.7976931348623157E308" text="Time" textFill="WHITE" HBox.hgrow="ALWAYS">
-                    <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin>
-                    <font>
-                        <Font size="17.0" />
-                    </font>
-                </Label>
-                <Label fx:id="neededLemmings" alignment="CENTER" maxWidth="1.7976931348623157E308" text="NeadedLemmings" textFill="WHITE" HBox.hgrow="ALWAYS">
-                    <HBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                    </HBox.margin>
-                    <font>
-                        <Font size="17.0" />
-                    </font>
-                </Label>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </HBox.margin>
+            </Button>
+            <Label fx:id="lemmingsCount" alignment="CENTER" maxWidth="1.7976931348623157E308" text="LemmingsCount" textFill="WHITE" HBox.hgrow="ALWAYS" style="-fx-font-size: 17px;">
+                <HBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                </HBox.margin>
+            </Label>
+            <Label fx:id="time" alignment="CENTER" maxWidth="1.7976931348623157E308" text="Time" textFill="WHITE" HBox.hgrow="ALWAYS" style="-fx-font-size: 17px;">
+                <HBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                </HBox.margin>
+            </Label>
+            <Label fx:id="neededLemmings" alignment="CENTER" maxWidth="1.7976931348623157E308" text="NeadedLemmings" textFill="WHITE" HBox.hgrow="ALWAYS" style="-fx-font-size: 17px;">
+                <HBox.margin>
+                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                </HBox.margin>
+            </Label>
         </HBox>
     </top>
 </BorderPane>

@@ -1,5 +1,16 @@
+@font-face {
+    font-family: 'Jersey 10';
+    src: url("Jersey10-Regular.ttf");
+}
+
 .root {
     -fx-background-color: white;
+    -fx-font-family: 'Jersey 10';
+    -fx-font-size: 20px;
+}
+
+.button {
+    -fx-font-family: 'Jersey 10';
 }
 
 .mainmenu-root {
