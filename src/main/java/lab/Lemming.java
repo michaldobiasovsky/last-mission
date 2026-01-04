@@ -13,16 +13,58 @@ import java.util.logging.Logger;
 
 public class Lemming extends Entity {
 
-    private static final Logger logger = Logger.getLogger(Lemming.class.getName());
+    private final Logger logger;
+    private final double scale;
+    private final double gravity;
+    private final double speedMultiplier;
+    private final double collisionTolerance;
+    private final double climbTolerance;
+    private final double directionCooldownSec;
 
-    private static final double SCALE = 0.7;
-    private static final double GRAVITY = 400;
+    private final Image walkRight;
+    private final Image walkLeft;
+    private final Image blockImg;
+    private final AudioClip weeSound;
 
-    private static final double SPEED_MULTIPLIER = 0.8;
+    private double width;
+    private double height;
+    private Role role;
+    private int direction;
+    private double velocityY;
+    private final double speedX;
+    private final double soundVolume;
 
-    private static final double SOUND_VOLUME = 0.2;
+    private double directionCooldown = 0;
+    private boolean onGround = false;
+    private boolean onFloor = false;
+    private boolean hasScreamed = false;
+    private boolean hasTouchedGroundOnce = false;
 
-    private static Image loadImage(String path) {
+    public Lemming(double x, double y) {
+        super(x, y);
+        this.logger = Logger.getLogger(Lemming.class.getName());
+        this.scale = 0.7;
+        this.gravity = 400;
+        this.speedMultiplier = 0.8;
+        this.collisionTolerance = 15.0;
+        this.climbTolerance = 2.0;
+        this.directionCooldownSec = 0.15;
+
+        this.walkRight = loadImage("/lab/cosmo_right.gif");
+        this.walkLeft = loadImage("/lab/cosmo_left.gif");
+        this.blockImg = loadImage("/lab/stop.gif");
+        this.weeSound = loadSound("/lab/wee.mp3");
+
+        this.direction = 1;
+        this.velocityY = 0;
+        this.role = Role.DEFAULT;
+        this.speedX = 40;
+        this.soundVolume = 0.2;
+        this.width = walkRight.getWidth() * scale;
+        this.height = walkRight.getHeight() * scale;
+    }
+
+    private Image loadImage(String path) {
         InputStream stream = Lemming.class.getResourceAsStream(path);
         if (stream == null) {
             throw new IllegalArgumentException("Image not found: " + path);
@@ -30,50 +72,13 @@ public class Lemming extends Entity {
         return new Image(stream);
     }
 
-    private static AudioClip loadSound(String path) {
+    private AudioClip loadSound(String path) {
         URL url = Lemming.class.getResource(path);
         if (url == null) {
             logger.log(Level.SEVERE, "Sound not found: {0}", path);
             return null;
         }
         return new AudioClip(url.toExternalForm());
-    }
-
-    private static final Image WALK_RIGHT = loadImage("/lab/cosmo_right.gif");
-    private static final Image WALK_LEFT = loadImage("/lab/cosmo_left.gif");
-    private static final Image BLOCK_IMG = loadImage("/lab/stop.gif");
-
-    private static final AudioClip WEE_SOUND = loadSound("/lab/wee.mp3");
-
-    private static final double COLLISION_TOLERANCE = 15.0;
-    private static final double CLIMB_TOLERANCE = 2.0;
-
-    private double width;
-    private double height;
-
-    private Role role;
-    private int direction;
-    private double velocityY;
-    private final double speedX;
-
-    private double directionCooldown = 0;
-    private static final double DIRECTION_COOLDOWN_SEC = 0.15;
-
-    private boolean onGround = false;
-    private boolean onFloor = false;
-
-    private boolean hasScreamed = false;
-
-    private boolean hasTouchedGroundOnce = false;
-
-    public Lemming(double x, double y) {
-        super(x, y);
-        this.direction = 1;
-        this.velocityY = 0;
-        this.role = Role.DEFAULT;
-        this.speedX = 40;
-        this.width = WALK_RIGHT.getWidth() * SCALE;
-        this.height = WALK_RIGHT.getHeight() * SCALE;
     }
 
     @Override
@@ -90,17 +95,18 @@ public class Lemming extends Entity {
     public void changeDirection() {
         if (directionCooldown > 0) return;
         direction *= -1;
-        directionCooldown = DIRECTION_COOLDOWN_SEC;
+        directionCooldown = directionCooldownSec;
     }
 
     public Role getRole() { return role; }
+
     public void setRole(Role r) {
         this.role = r;
         if (r == Role.BLOCK) {
-            this.width = BLOCK_IMG.getWidth() * SCALE;
+            this.width = blockImg.getWidth() * scale;
         } else {
-            this.width = WALK_RIGHT.getWidth() * SCALE;
-            this.height = WALK_RIGHT.getHeight() * SCALE;
+            this.width = walkRight.getWidth() * scale;
+            this.height = walkRight.getHeight() * scale;
         }
     }
 
@@ -185,7 +191,7 @@ public class Lemming extends Entity {
         int stepDir = step.getStepDirection();
         boolean canClimb = (direction == stepDir);
         double heightDifference = barrierTop - y;
-        boolean isTooHigh = heightDifference > COLLISION_TOLERANCE;
+        boolean isTooHigh = heightDifference > collisionTolerance;
 
         if (canClimb && !isTooHigh && y < barrierTop && y + h > barrierBottom) {
             Rectangle2D targetBox = new Rectangle2D(getX(), barrierTop, getWidth(), h);
@@ -211,7 +217,6 @@ public class Lemming extends Entity {
         double h = getHeight();
         double x = getX();
 
-        // Falling down
         if (velocityY > 0) {
             double penetration = (y + h) - barrierBottom;
             if (penetration > 0 && y < barrierBottom) {
@@ -225,7 +230,6 @@ public class Lemming extends Entity {
             }
         }
 
-        // Jumping up (hitting ceiling)
         if (velocityY <= 0) {
             double overlap = barrierTop - y;
             if (overlap > 0 && overlap < h * 0.6) {
@@ -253,9 +257,9 @@ public class Lemming extends Entity {
         double h = getHeight();
 
         double frontX = (direction == 1) ? (x + w) : x;
-        boolean hitsRight = (direction == 1 && frontX >= barrierLeft && frontX < barrierLeft + COLLISION_TOLERANCE);
-        boolean hitsLeft  = (direction == -1 && frontX <= barrierRight && frontX > barrierRight - COLLISION_TOLERANCE);
-        boolean verticallyInside = (y + h - CLIMB_TOLERANCE > barrierBottom) && (y < barrierTop - CLIMB_TOLERANCE);
+        boolean hitsRight = (direction == 1 && frontX >= barrierLeft && frontX < barrierLeft + collisionTolerance);
+        boolean hitsLeft  = (direction == -1 && frontX <= barrierRight && frontX > barrierRight - collisionTolerance);
+        boolean verticallyInside = (y + h - climbTolerance > barrierBottom) && (y < barrierTop - climbTolerance);
 
         if ((hitsRight || hitsLeft) && verticallyInside) {
             changeDirection();
@@ -311,9 +315,9 @@ public class Lemming extends Entity {
 
     private Image getCurrentImage() {
         if (role == Role.BLOCK) {
-            return BLOCK_IMG;
+            return blockImg;
         }
-        return (direction == 1) ? WALK_RIGHT : WALK_LEFT;
+        return (direction == 1) ? walkRight : walkLeft;
     }
 
     public void simulate(double deltaTime, World world) {
@@ -329,13 +333,13 @@ public class Lemming extends Entity {
         onGround = false;
         onFloor = false;
 
-        move(speedX * SPEED_MULTIPLIER * deltaTime);
-        velocityY -= GRAVITY * deltaTime;
+        move(speedX * speedMultiplier * deltaTime);
+        velocityY -= gravity * deltaTime;
         position = position.add(0, velocityY * deltaTime);
 
         if (velocityY < -150 && !onGround && !hasScreamed && hasTouchedGroundOnce) {
-            if (WEE_SOUND != null) {
-                WEE_SOUND.play(SOUND_VOLUME);
+            if (weeSound != null) {
+                weeSound.play(soundVolume);
             }
             hasScreamed = true;
         }

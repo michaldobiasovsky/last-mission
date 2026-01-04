@@ -23,25 +23,35 @@ public class World {
         this.canvasHeight = canvasHeight;
     }
 
-    public static World fromLevel(Level level, double canvasWidth, double canvasHeight) {
-        World w = new World(canvasWidth, canvasHeight);
-        if (level == null) {
-            return w;
-        }
+    public World(Level level, double canvasWidth, double canvasHeight) {
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
 
-        w.getBarriers().addAll(level.getBarriers());
-        w.getDoors().addAll(level.getDoors());
+        if (level != null) {
+            this.barriers.addAll(level.getBarriers());
+            this.doors.addAll(level.getDoors());
 
-        if (level.getTotalLemmings() > 0) {
-            w.spawnFromEntry(level.getTotalLemmings(), 1.7);
+            if (level.getTotalLemmings() > 0) {
+                this.spawnFromEntry(level.getTotalLemmings(), 1.7);
+            }
         }
-        return w;
     }
 
-    public List<Lemming> getLemmings() { return lemmings; }
-    public List<Barrier> getBarriers() { return barriers; }
-    public List<Door> getDoors() { return doors; }
-    public int getExitedCount() { return exitedCount; }
+    public List<Lemming> getLemmings() {
+        return lemmings;
+    }
+
+    public List<Barrier> getBarriers() {
+        return barriers;
+    }
+
+    public List<Door> getDoors() {
+        return doors;
+    }
+
+    public int getExitedCount() {
+        return exitedCount;
+    }
 
     public void spawnFromEntry(int count, double intervalSeconds) {
         Door entry = doors.stream().filter(d -> d.getType() == DoorType.ENTRY).findFirst().orElse(null);
@@ -57,7 +67,7 @@ public class World {
         return true;
     }
 
-    private static class SpawnRequest {
+    private class SpawnRequest {
         final Door door;
         int remaining;
         final double interval;

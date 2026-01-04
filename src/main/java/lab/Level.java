@@ -8,21 +8,39 @@ public record Level(int id, String name, String backgroundImagePath,
                     int totalLemmings, int neededLemmings,Point2D entryPosition,
                     List<Barrier> barriers, List<Door> doors,
                     Map<Role, Integer> abilityCounts){
-    public int getId() { return id(); }
+    public int getId() {
+        return id();
+    }
 
-    public String getName() { return name(); }
+    public String getName() {
+        return name();
+    }
 
-    public String getBackgroundImagePath() { return backgroundImagePath(); }
+    public String getBackgroundImagePath() {
+        return backgroundImagePath();
+    }
 
-    public int getTotalLemmings() { return totalLemmings(); }
+    public int getTotalLemmings() {
+        return totalLemmings();
+    }
 
-    public int getNeededLemmings() { return neededLemmings(); }
+    public int getNeededLemmings() {
+        return neededLemmings();
+    }
 
-    public Point2D getEntryPosition() { return entryPosition(); }
+    public Point2D getEntryPosition() {
+        return entryPosition();
+    }
 
-    public List<Barrier> getBarriers() { return barriers(); }
+    public List<Barrier> getBarriers() {
+        return barriers();
+    }
 
-    public List<Door> getDoors() { return doors(); }
+    public List<Door> getDoors() {
+        return doors();
+    }
 
-    public Map<Role, Integer> getAbilityCounts() { return abilityCounts(); }
+    public Map<Role, Integer> getAbilityCounts() {
+        return abilityCounts();
+    }
 }

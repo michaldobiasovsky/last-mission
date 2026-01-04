@@ -12,14 +12,18 @@ import java.util.Optional;
 
 public final class MusicSettings {
 
-    private static final String FILE_NAME = "scores.csv";
-    private static final String MUSIC_ON = "MUSIC ON";
-    private static final String MUSIC_OFF = "MUSIC OFF";
+    private final String fileName;
+    private final String musicOn;
+    private final String musicOff;
 
-    private MusicSettings() { }
+    public MusicSettings() {
+        this.fileName = "scores.csv";
+        this.musicOn = "MUSIC ON";
+        this.musicOff = "MUSIC OFF";
+    }
 
-    public static Optional<Boolean> loadMusicSetting() {
-        Path p = Paths.get(FILE_NAME);
+    public Optional<Boolean> loadMusicSetting() {
+        Path p = Paths.get(fileName);
         if (!Files.exists(p)) return Optional.empty();
 
         try {
@@ -38,21 +42,21 @@ public final class MusicSettings {
         }
     }
 
-    private static Optional<String> firstNonBlankTrimmed(String line) {
+    private Optional<String> firstNonBlankTrimmed(String line) {
         if (line == null) return Optional.empty();
         String t = line.trim();
         return t.isEmpty() ? Optional.empty() : Optional.of(t);
     }
 
-    private static Optional<Boolean> parseMusicSetting(String t) {
-        if (t.equalsIgnoreCase(MUSIC_ON)) return Optional.of(true);
-        if (t.equalsIgnoreCase(MUSIC_OFF)) return Optional.of(false);
+    private Optional<Boolean> parseMusicSetting(String t) {
+        if (t.equalsIgnoreCase(musicOn)) return Optional.of(true);
+        if (t.equalsIgnoreCase(musicOff)) return Optional.of(false);
         return Optional.empty();
     }
 
-    public static void saveMusicSetting(boolean enabled) throws ScoreException {
-        Path p = Paths.get(FILE_NAME);
-        String header = enabled ? MUSIC_ON : MUSIC_OFF;
+    public void saveMusicSetting(boolean enabled) throws ScoreException {
+        Path p = Paths.get(fileName);
+        String header = enabled ? musicOn : musicOff;
 
         try {
             List<String> existing = Files.exists(p)
@@ -69,7 +73,7 @@ public final class MusicSettings {
 
             if (firstNonEmptyIdx != -1) {
                 String first = existing.get(firstNonEmptyIdx).trim();
-                if (first.equalsIgnoreCase(MUSIC_ON) || first.equalsIgnoreCase(MUSIC_OFF)) {
+                if (first.equalsIgnoreCase(musicOn) || first.equalsIgnoreCase(musicOff)) {
                     existing = new java.util.ArrayList<>(existing);
                     existing.remove(firstNonEmptyIdx);
                 }

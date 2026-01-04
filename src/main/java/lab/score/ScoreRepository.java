@@ -14,7 +14,7 @@ public class ScoreRepository {
     private static final String MUSIC_ON = "MUSIC ON";
     private static final String MUSIC_OFF = "MUSIC OFF";
 
-    public static void save(List<Score> scores) throws ScoreException {
+    public void save(List<Score> scores) throws ScoreException {
         Path file = Paths.get(FILE_NAME);
         String existingHeader = null;
 
@@ -43,7 +43,7 @@ public class ScoreRepository {
         }
     }
 
-    public static List<Score> load() throws ScoreException {
+    public List<Score> load() throws ScoreException {
         List<Score> result = new ArrayList<>();
         Path file = Paths.get(FILE_NAME);
         if (!Files.exists(file)) {
@@ -61,7 +61,7 @@ public class ScoreRepository {
                 if (t.equalsIgnoreCase(MUSIC_ON) || t.equalsIgnoreCase(MUSIC_OFF)) {
                     continue;
                 }
-                result.add(Score.fromCsvLine(line, lineNumber));
+                result.add(new Score(line, lineNumber));
             }
         } catch (IOException e) {
             throw new ScoreException("Exception during loading: " + e.getMessage(), e);

@@ -6,42 +6,40 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.stage.Stage;
 import lab.score.Score;
 import lab.score.ScoreException;
 import lab.score.ScoreRepository;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-public class LevelsController implements StageAware {
+public class LevelsController {
 
     @FXML private ListView<Level> levelList;
-
     @FXML private Label nameLabel;
     @FXML private Label totalLabel;
     @FXML private Label neededLabel;
     @FXML private Label abilitiesLabel;
     @FXML private Label bestTimeLabel;
-
     @FXML private Button playButton;
 
     private Level selected;
     private List<Score> scores;
+    private App app;
 
-    @Override
-    public void setStage(Stage stage) {
-        // Stage se v tomto controlleru nepoužívá, není nutné ho ukládat do pole.
+    public void setApp(App app) {
+        this.app = app;
     }
 
     @FXML
     public void initialize() {
-        List<Level> levels = LevelRepository.loadDefaults();
-
+        List<Level> levels = new LevelRepository().loadDefaults();
         try {
-            scores = ScoreRepository.load();
+            ScoreRepository repository = new ScoreRepository();
+            scores = repository.load();
         } catch (ScoreException e) {
             scores = new ArrayList<>();
         }
@@ -71,12 +69,16 @@ public class LevelsController implements StageAware {
             }
         });
 
-        if (playButton != null) playButton.setDisable(true);
+        if (playButton != null) {
+            playButton.setDisable(true);
+        }
 
         levelList.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
             selected = newV;
             renderDetails(newV);
-            if (playButton != null) playButton.setDisable(newV == null);
+            if (playButton != null) {
+                playButton.setDisable(newV == null);
+            }
         });
 
         if (!levels.isEmpty()) {
@@ -85,7 +87,9 @@ public class LevelsController implements StageAware {
     }
 
     private void renderDetails(Level lvl) {
-        if (nameLabel == null) return;
+        if (nameLabel == null) {
+            return;
+        }
 
         if (lvl == null) {
             renderEmptyDetails();
@@ -112,7 +116,9 @@ public class LevelsController implements StageAware {
     }
 
     private void renderAbilitiesDetails(Level lvl) {
-        if (abilitiesLabel == null) return;
+        if (abilitiesLabel == null) {
+            return;
+        }
 
         Map<Role, Integer> abilities = lvl.getAbilityCounts();
         if (abilities == null) {
@@ -128,9 +134,10 @@ public class LevelsController implements StageAware {
         abilitiesLabel.setText(sb.toString());
     }
 
-
     private void renderBestTimeDetails(Level lvl) {
-        if (bestTimeLabel == null) return;
+        if (bestTimeLabel == null) {
+            return;
+        }
 
         List<Score> top = safeScores().stream()
             .filter(s -> s.getLevel() == lvl.getId() && s.isUnlocked())
@@ -174,11 +181,15 @@ public class LevelsController implements StageAware {
     }
 
     private void setIfPresent(Label label, String text) {
-        if (label != null) label.setText(text);
+        if (label != null) {
+            label.setText(text);
+        }
     }
 
     private boolean isLevelWon(int levelId) {
-        if (scores == null) return false;
+        if (scores == null) {
+            return false;
+        }
         return scores.stream()
             .anyMatch(s -> s.getLevel() == levelId && s.isUnlocked());
     }
@@ -192,12 +203,25 @@ public class LevelsController implements StageAware {
 
     @FXML
     private void onPlay() {
-        if (selected == null) return;
-        App.showGame(selected);
+        if (selected == null || app == null) {
+            return;
+        }
+        try {
+            app.switchToGame(selected);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void onBack() {
-        App.showMainMenu();
+        if (app == null) {
+            return;
+        }
+        try {
+            app.switchToMainMenu();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

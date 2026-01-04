@@ -6,16 +6,18 @@ import javafx.scene.image.Image;
 public class Door extends Entity {
     private static final double SCALE = 0.7;
 
-    private static final Image ENTRY_IMG = new Image(Door.class.getResourceAsStream("/lab/stargate.gif"));
-    private static final Image EXIT_IMG  = new Image(Door.class.getResourceAsStream("/lab/rocket.gif"));
-
     private final double width;
     private final double height;
     private final DoorType type;
+    private final Image entryImg;
+    private final Image exitImg;
 
     public Door(double x, double y, DoorType type) {
         super(x, y);
-        Image base = (type == DoorType.EXIT) ? EXIT_IMG : ENTRY_IMG;
+        this.entryImg = new Image(Door.class.getResourceAsStream("/lab/stargate.gif"));
+        this.exitImg = new Image(Door.class.getResourceAsStream("/lab/rocket.gif"));
+
+        Image base = (type == DoorType.EXIT) ? exitImg : entryImg;
         this.width = base.getWidth() * SCALE;
         this.height = base.getHeight() * SCALE;
         this.type = type;
@@ -27,7 +29,7 @@ public class Door extends Entity {
 
     @Override
     public void draw(GraphicsContext gc) {
-        Image img = (type == DoorType.EXIT) ? EXIT_IMG : ENTRY_IMG;
+        Image img = (type == DoorType.EXIT) ? exitImg : entryImg;
         gc.save();
         gc.scale(1, -1);
         gc.drawImage(img, getX(), -getY() - height, width, height);

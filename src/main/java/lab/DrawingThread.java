@@ -3,8 +3,6 @@ package lab;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 
 public class DrawingThread extends AnimationTimer {
 
@@ -12,7 +10,6 @@ public class DrawingThread extends AnimationTimer {
     private final GraphicsContext gc;
     private final World world;
 
-    private static final boolean SHOW_FPS = false;
 
     private double x = 0;
     private double y = 50;
@@ -35,14 +32,11 @@ public class DrawingThread extends AnimationTimer {
         gc.clearRect(0,0,canvas.getWidth(), canvas.getHeight());
         world.draw(gc);
 
-        if (SHOW_FPS) {
-            drawFps(delta);
-        }
 
         world.simulate(delta);
         x += delta * speedX;
         y += delta * speedY;
-        speedY += delta * 9.81 * 2; //gravity
+        speedY += delta * 9.81 * 2;
         if (!lastFrameXDirectionChanged && (x < 0 || x > canvas.getWidth() - 20)) {
             speedX *= -0.9;
             lastFrameXDirectionChanged = true;
@@ -55,27 +49,5 @@ public class DrawingThread extends AnimationTimer {
         } else {
             lastFrameYDirectionChanged = false;
         }
-    }
-
-    private void drawFps(double delta) {
-        int fps = calcFps(delta);
-        gc.setFont(new Font("Arial", 30));
-        gc.setFill(Color.BLACK);
-        gc.fillText(String.format("FPS: %04d", fps), 10, canvas.getHeight() - 10);
-    }
-
-    private double fpsSum = 0;
-    private double fpsCount = 0;
-    private int avergeFps = 0;
-
-    private int calcFps(double delta) {
-        fpsSum += 1 / delta;
-        fpsCount += 1;
-        if (fpsCount >= 100) {
-            avergeFps = (int) (fpsSum / fpsCount);
-            fpsSum = 0;
-            fpsCount = 0;
-        }
-        return avergeFps;
     }
 }

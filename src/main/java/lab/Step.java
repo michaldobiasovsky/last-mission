@@ -12,10 +12,15 @@ import java.util.Objects;
 public class Step extends Barrier {
 
     private final int stepDirection;
+    private final Image stairsTexImg;
 
-    private static final Image STAIRS_TEX_IMG = loadStairsTexture();
+    public Step(double x, double y, double lemmingWidth, double lemmingHeight, int direction) {
+        super(x, y, lemmingWidth + 10, lemmingHeight);
+        this.stepDirection = direction;
+        this.stairsTexImg = loadStairsTexture();
+    }
 
-    private static Image loadStairsTexture() {
+    private Image loadStairsTexture() {
         try (InputStream in = Objects.requireNonNull(
             Step.class.getResourceAsStream("/lab/textureStairs.jpg"),
             "Resource not found: /lab/textureStairs.jpg"
@@ -24,11 +29,6 @@ public class Step extends Barrier {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    public Step(double x, double y, double lemmingWidth, double lemmingHeight, int direction) {
-        super(x, y, lemmingWidth + 10, lemmingHeight);
-        this.stepDirection = direction;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class Step extends Barrier {
         double shorterSide = Math.min(w, h);
         double tile = Math.clamp(w, 1.0, shorterSide);
 
-        ImagePattern pattern = new ImagePattern(STAIRS_TEX_IMG, getX(), getY(), tile, tile, false);
+        ImagePattern pattern = new ImagePattern(stairsTexImg, getX(), getY(), tile, tile, false);
 
         gc.setFill(pattern);
         gc.fillRect(getX(), getY(), w, h);

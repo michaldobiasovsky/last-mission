@@ -16,6 +16,7 @@ import lab.score.Score;
 import lab.score.ScoreException;
 import lab.score.ScoreRepository;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -23,17 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class GameController implements StageAware {
-
-    private static final String DEFAULT_LEVEL_IMAGE = "/lab/level1.png";
+public class GameController {
 
     @FXML private BorderPane root;
     @FXML private Canvas canvas;
-
     @FXML private Button blockBtn;
     @FXML private Button buildBtn;
     @FXML private Button killBtn;
-
     @FXML private Label lemmingsCount;
     @FXML private Label time;
     @FXML private Label neededLemmings;
@@ -41,31 +38,31 @@ public class GameController implements StageAware {
     private World world;
     private DrawingThread timer;
     private AnimationTimer uiUpdater;
-
-    private Role selectedRole = null;
-
+    private Role selectedRole;
     private Level currentLevelObj;
     private final Map<Role, Integer> abilityCounts = new EnumMap<>(Role.class);
     private List<Score> scores = new ArrayList<>();
-
     private long levelStartTime = 0;
     private boolean levelFinished = false;
+    private App app;
 
-    @Override
-    public void setStage(Stage stage) {
-        // Stage reference removed as it was unused
+
+    public void setApp(App app) {
+        this.app = app;
     }
 
     @FXML
     void initialize() {
+        ScoreRepository repository = new ScoreRepository();
         try {
-            scores = ScoreRepository.load();
+            scores = repository.load();
         } catch (ScoreException e) {
             scores = new ArrayList<>();
         }
         canvas.addEventHandler(MouseEvent.MOUSE_CLICKED, this::handleCanvasClick);
         updateAbilityButtons();
     }
+
 
     @FXML
     void block(javafx.event.ActionEvent event) {
@@ -95,23 +92,37 @@ public class GameController implements StageAware {
     @FXML
     void onStop(javafx.event.ActionEvent event) {
         stop();
-        App.showMainMenu();
+        if (app != null) {
+            try {
+                app.switchToMainMenu();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void stop() {
-        if (timer != null) timer.stop();
-        if (uiUpdater != null) uiUpdater.stop();
+        if (timer != null) {
+            timer.stop();
+        }
+        if (uiUpdater != null) {
+            uiUpdater.stop();
+        }
     }
 
     public void startLevel(Level level) {
-        if (timer != null) timer.stop();
-        if (uiUpdater != null) uiUpdater.stop();
+        if (timer != null) {
+            timer.stop();
+        }
+        if (uiUpdater != null) {
+            uiUpdater.stop();
+        }
 
         currentLevelObj = level;
         levelFinished = false;
 
         world = (level != null)
-            ? World.fromLevel(level, canvas.getWidth(), canvas.getHeight())
+            ? new World(level, canvas.getWidth(), canvas.getHeight())
             : new World(canvas.getWidth(), canvas.getHeight());
 
         abilityCounts.clear();
@@ -134,14 +145,11 @@ public class GameController implements StageAware {
     }
 
     private void applyLevelBackground(Level level) {
-        if (root == null) return;
-
-        String imagePath = DEFAULT_LEVEL_IMAGE;
-        if (level != null && level.getBackgroundImagePath() != null) {
-            imagePath = level.getBackgroundImagePath();
+        if (root == null || level == null || level.getBackgroundImagePath() == null) {
+            return;
         }
 
-        java.net.URL resource = getClass().getResource(imagePath);
+        java.net.URL resource = getClass().getResource(level.getBackgroundImagePath());
         if (resource != null) {
             root.setStyle(
                 String.format("-fx-background-image: url('%s'); -fx-background-size: cover;", resource.toExternalForm())
@@ -151,15 +159,20 @@ public class GameController implements StageAware {
         }
     }
 
+
     private void handleCanvasClick(MouseEvent e) {
-        if (world == null || selectedRole == null) return;
+        if (world == null || selectedRole == null) {
+            return;
+        }
         double clickX = e.getX();
         double clickY = canvas.getHeight() - e.getY();
 
         Lemming target = world.getLemmings().stream()
             .filter(l -> l.getBoundingBox().contains(clickX, clickY))
             .findFirst().orElse(null);
-        if (target == null) return;
+        if (target == null) {
+            return;
+        }
 
         switch (selectedRole) {
             case BLOCK:
@@ -188,7 +201,9 @@ public class GameController implements StageAware {
 
     private boolean decrementAbility(Role r) {
         Integer cnt = abilityCounts.getOrDefault(r, 0);
-        if (cnt == null || cnt <= 0) return false;
+        if (cnt == null || cnt <= 0) {
+            return false;
+        }
         abilityCounts.put(r, cnt - 1);
         return true;
     }
@@ -226,7 +241,9 @@ public class GameController implements StageAware {
     }
 
     private void failLevel() {
-        if (levelFinished) return;
+        if (levelFinished) {
+            return;
+        }
         levelFinished = true;
         stop();
         javafx.application.Platform.runLater(this::showLevelFailedDialog);
@@ -248,12 +265,20 @@ public class GameController implements StageAware {
             levelFinished = false;
             startLevel(currentLevelObj);
         } else {
-            App.showMainMenu();
+            if (app != null) {
+                try {
+                    app.switchToMainMenu();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
     private void finishLevel() {
-        if (levelFinished) return;
+        if (levelFinished) {
+            return;
+        }
         levelFinished = true;
         stop();
         javafx.application.Platform.runLater(this::showLevelCompletedDialog);
@@ -312,7 +337,13 @@ public class GameController implements StageAware {
             levelFinished = false;
             startLevel(nextLevel);
         } else {
-            App.showMainMenu();
+            if (app != null) {
+                try {
+                    app.switchToMainMenu();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -336,7 +367,7 @@ public class GameController implements StageAware {
                 dialogStage.getIcons().add(iconImage);
             }
         } catch (ClassCastException | NullPointerException ignored) {
-            // Best-effort: setting the dialog icon is not critical.
+            // Best-effort approach for setting dialog icon
         }
 
         return dialog;
@@ -363,8 +394,10 @@ public class GameController implements StageAware {
     }
 
     private Level findNextLevel() {
-        if (currentLevelObj == null) return null;
-        List<Level> levels = LevelRepository.loadDefaults();
+        if (currentLevelObj == null) {
+            return null;
+        }
+        List<Level> levels = new LevelRepository().loadDefaults();
         return levels.stream()
             .filter(l -> l.getId() > currentLevelObj.getId())
             .min(Comparator.comparingInt(Level::getId))
@@ -377,9 +410,11 @@ public class GameController implements StageAware {
         scores.add(new Score(lvlId, true, elapsedMillis, playerName));
 
         try {
-            ScoreRepository.save(scores);
+            ScoreRepository repository = new ScoreRepository();
+            repository.save(scores);
         } catch (ScoreException e) {
             e.printStackTrace();
         }
     }
+
 }

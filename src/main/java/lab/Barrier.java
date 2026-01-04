@@ -7,14 +7,13 @@ import javafx.scene.paint.ImagePattern;
 public class Barrier extends Entity {
     private final double width;
     private final double height;
-
-    private static final Image WALL_TEX_IMG =
-        new Image(Barrier.class.getResourceAsStream("/lab/texture.jpg"));
+    private final Image wallTexImage;
 
     public Barrier(double x, double y, double width, double height) {
         super(x, y);
         this.width = width;
         this.height = height;
+        this.wallTexImage = new Image(Barrier.class.getResourceAsStream("/lab/texture.jpg"));
     }
 
     @Override
@@ -37,7 +36,7 @@ public class Barrier extends Entity {
         double h = getHeight();
 
         double tile = Math.clamp(Math.min(w, h), 1.0, Double.POSITIVE_INFINITY);
-        ImagePattern pattern = new ImagePattern(WALL_TEX_IMG, getX(), getY(), tile, tile, false);
+        ImagePattern pattern = new ImagePattern(wallTexImage, getX(), getY(), tile, tile, false);
 
         gc.setFill(pattern);
         gc.fillRect(getX(), getY(), w, h);

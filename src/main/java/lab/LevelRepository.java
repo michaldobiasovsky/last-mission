@@ -7,16 +7,10 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-public final class LevelRepository {
+public class LevelRepository {
 
-    private LevelRepository() {
-        // Utility class; prevent instantiation.
-    }
-
-    public static List<Level> loadDefaults() {
+    public List<Level> loadDefaults() {
         List<Level> levels = new ArrayList<>();
-
-
 
         // level 1 - First steps
         List<Barrier> barriers1 = new ArrayList<>();
@@ -45,10 +39,6 @@ public final class LevelRepository {
         );
         levels.add(l1);
 
-
-
-
-
         // level 2 - Deep Dive
         List<Barrier> barriers2 = new ArrayList<>();
         barriers2.add(new Barrier(59, 10, 834, 20));
@@ -76,8 +66,6 @@ public final class LevelRepository {
             abilities2
         );
         levels.add(l2);
-
-
 
         // level 3 - Stairs
         List<Barrier> barriers3 = new ArrayList<>();
@@ -111,9 +99,7 @@ public final class LevelRepository {
         );
         levels.add(l3);
 
-
-
-// level 4 - Broken space
+        // level 4 - Broken space
         List<Barrier> barriers4 = new ArrayList<>();
         barriers4.add(new Barrier(774, 10, 211, 20));
         barriers4.add(new Barrier(17, 10, 167, 20));
@@ -148,10 +134,7 @@ public final class LevelRepository {
         );
         levels.add(l4);
 
-
-
-
-// level 5 - Last Step
+        // level 5 - Last Step
         List<Barrier> barriers5 = new ArrayList<>();
         barriers5.add(new Barrier(848, 310, 169, 20));
         barriers5.add(new Barrier(16, 460, 177, 20));
@@ -179,10 +162,6 @@ public final class LevelRepository {
             abilities5
         );
         levels.add(l5);
-
-
-
-
 
         return levels;
     }

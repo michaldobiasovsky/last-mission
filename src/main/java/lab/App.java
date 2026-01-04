@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -16,172 +17,137 @@ import java.util.logging.Logger;
 
 public class App extends Application {
 
-    public static final double APP_WIDTH = 1024;
-    public static final double APP_HEIGHT = 768;
-
     private static final Logger LOGGER = Logger.getLogger(App.class.getName());
+    private static final double APP_WIDTH = 1024;
+    private static final double APP_HEIGHT = 768;
 
-    private static Stage primaryStage;
-    private static MediaPlayer musicPlayer;
-    private static boolean musicEnabled = true;
-
+    private Stage primaryStage;
+    private MediaPlayer musicPlayer;
+    private boolean musicEnabled = true;
     private GameController gameController;
+    private static App instance;
 
-    private static synchronized void setPrimaryStage(Stage stage) {
-        primaryStage = stage;
-    }
-
-    public static synchronized Stage getPrimaryStage() {
-        return primaryStage;
-    }
-
-    public static void setScene(Scene scene) {
-        Stage stage = getPrimaryStage();
-        if (stage == null) return;
-        stage.setScene(scene);
-        stage.sizeToScene();
-        stage.centerOnScreen();
-    }
-
-    public static void applyCommonStageSettings(Stage stage) {
-        stage.setResizable(false);
-    }
-
-    public static void applyCommonSceneStyles(Scene scene) {
-        scene.getStylesheets().add(App.class.getResource("/lab/application.css").toExternalForm());
-    }
-
-    public static void showMainMenu() {
-        try {
-            Scene scene = loadScene("/lab/mainMenu.fxml");
-            applyCommonStageSettings(getPrimaryStage());
-            setScene(scene);
-        } catch (RuntimeException | IOException e) {
-            LOGGER.log(java.util.logging.Level.SEVERE, "Failed to show main menu", e);
-        }
-    }
-
-    public static void showGame(lab.Level level) {
-        try {
-            Stage stage = getPrimaryStage();
-            if (stage == null) return;
-
-            FXMLLoader loader = new FXMLLoader(App.class.getResource("/lab/gameWindow.fxml"));
-            Parent root = loader.load();
-
-            GameController gc = loader.getController();
-            if (gc instanceof StageAware sa) {
-                sa.setStage(stage);
-            }
-
-            Scene scene = new Scene(root, APP_WIDTH, APP_HEIGHT);
-            applyCommonSceneStyles(scene);
-
-            applyCommonStageSettings(stage);
-            stage.setScene(scene);
-            stage.sizeToScene();
-
-            gc.startLevel(level);
-
-        } catch (RuntimeException | IOException e) {
-            LOGGER.log(java.util.logging.Level.SEVERE, "Failed to start game", e);
-        }
-    }
-
-    public static Scene loadScene(String fxmlPath) throws IOException {
-        URL fxmlUrl = App.class.getResource(fxmlPath);
-        if (fxmlUrl == null) {
-            throw new IOException("FXML resource not found: " + fxmlPath);
-        }
-
-        Parent root = FXMLLoader.load(fxmlUrl);
-        Scene scene = new Scene(root, APP_WIDTH, APP_HEIGHT);
-        applyCommonSceneStyles(scene);
-        return scene;
-    }
-
-    public static void showLevelsSelection() {
-        try {
-            Scene scene = loadScene("/lab/levels.fxml");
-            applyCommonStageSettings(getPrimaryStage());
-            setScene(scene);
-        } catch (RuntimeException | IOException e) {
-            LOGGER.log(java.util.logging.Level.SEVERE, "Failed to show level selection", e);
-        }
+    public static void main(String[] args) {
+        launch(args);
     }
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage primaryStage) {
         try {
-            setPrimaryStage(stage);
+            instance = this;
+            this.primaryStage = primaryStage;
+            primaryStage.setTitle("STARGATE");
 
-            playBackgroundMusic();
+            loadFont();
+            switchToMainMenu();
+            setMusicEnabled(musicEnabled);
 
-            FXMLLoader menuLoader = new FXMLLoader(getClass().getResource("/lab/mainMenu.fxml"));
-            Parent root = menuLoader.load();
+            Image iconImage = new Image(getClass().getResourceAsStream("/lab/stay.gif"));
+            primaryStage.getIcons().add(iconImage);
 
-            Scene scene = new Scene(root, APP_WIDTH, APP_HEIGHT);
-            applyCommonSceneStyles(scene);
-
-            Object controller = menuLoader.getController();
-            if (controller instanceof StageAware sa) {
-                sa.setStage(getPrimaryStage());
-            }
-
-            Stage ps = getPrimaryStage();
-            if (ps == null) return;
-
-            ps.getIcons().add(new Image(getClass().getResourceAsStream("/lab/stay.gif")));
-            ps.setTitle("Stargate");
-            ps.setScene(scene);
-
-            applyCommonStageSettings(ps);
-
-            ps.sizeToScene();
-
-            ps.show();
-            ps.setOnCloseRequest(this::exitProgram);
-        } catch (RuntimeException | IOException e) {
-            LOGGER.log(java.util.logging.Level.SEVERE, "Failed to start application", e);
+            primaryStage.show();
+            primaryStage.setOnCloseRequest(this::exitProgram);
+        } catch (Exception e) {
+            LOGGER.severe("Failed to start application: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    private static void playBackgroundMusic() {
+    private void loadFont() {
         try {
-            if (!musicEnabled) return;
+            Font.loadFont(getClass().getResourceAsStream("/TRON.TTF"), 20);
+        } catch (Exception e) {
+            LOGGER.warning("Failed to load custom font: " + e.getMessage());
+        }
+    }
 
-            synchronized (App.class) {
-                if (musicPlayer != null) return;
+    public void switchToMainMenu() throws IOException {
+        FXMLLoader menuLoader = new FXMLLoader(getClass().getResource("/lab/mainMenu.fxml"));
+        Parent root = menuLoader.load();
 
-                URL musicResource = App.class.getResource("/lab/cosmo.mp3");
-                if (musicResource == null) {
-                    LOGGER.log(java.util.logging.Level.WARNING, "Background music resource not found: /lab/cosmo.mp3");
-                    return;
-                }
+        MainMenuController menuController = menuLoader.getController();
+        menuController.setApp(this);
 
-                Media media = new Media(musicResource.toExternalForm());
-                musicPlayer = new MediaPlayer(media);
-                musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-                musicPlayer.play();
+        Scene scene = new Scene(root, APP_WIDTH, APP_HEIGHT);
+        applyCommonSceneStyles(scene);
+        primaryStage.setScene(scene);
+        primaryStage.sizeToScene();
+        primaryStage.centerOnScreen();
+    }
+
+    public void switchToLevelsSelection() throws IOException {
+        FXMLLoader levelsLoader = new FXMLLoader(getClass().getResource("/lab/levels.fxml"));
+        Parent root = levelsLoader.load();
+
+        LevelsController levelsController = levelsLoader.getController();
+        levelsController.setApp(this);
+
+        Scene scene = new Scene(root, APP_WIDTH, APP_HEIGHT);
+        applyCommonSceneStyles(scene);
+        primaryStage.setScene(scene);
+        primaryStage.sizeToScene();
+        primaryStage.centerOnScreen();
+    }
+
+    public void switchToGame(Level level) throws IOException {
+        FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/lab/gameWindow.fxml"));
+        Parent root = gameLoader.load();
+
+        gameController = gameLoader.getController();
+        gameController.setApp(this);
+
+        Scene scene = new Scene(root, APP_WIDTH, APP_HEIGHT);
+        applyCommonSceneStyles(scene);
+        primaryStage.setScene(scene);
+        primaryStage.sizeToScene();
+
+        gameController.startLevel(level);
+    }
+
+    private void applyCommonSceneStyles(Scene scene) {
+        URL cssUrl = getClass().getResource("/lab/application.css");
+        if (cssUrl != null) {
+            scene.getStylesheets().add(cssUrl.toExternalForm());
+        }
+    }
+
+    private void playBackgroundMusic() {
+        try {
+            if (musicPlayer != null) {
+                musicPlayer.dispose();
             }
+
+            URL musicUrl = getClass().getResource("/lab/cosmo.mp3");
+            if (musicUrl == null) {
+                LOGGER.warning("Background music file not found");
+                return;
+            }
+
+            Media media = new Media(musicUrl.toExternalForm());
+            musicPlayer = new MediaPlayer(media);
+            musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+            musicPlayer.setVolume(0.3);
+            musicPlayer.play();
         } catch (RuntimeException e) {
-            LOGGER.log(java.util.logging.Level.SEVERE, "Failed to play background music", e);
+            LOGGER.warning("Failed to play background music: " + e.getMessage());
         }
     }
 
-    private static synchronized void shutdownMusicPlayer() {
-        if (musicPlayer == null) return;
+    private void shutdownMusicPlayer() {
+        if (musicPlayer == null) {
+            return;
+        }
         try {
             musicPlayer.stop();
             musicPlayer.dispose();
         } catch (RuntimeException e) {
-            LOGGER.log(java.util.logging.Level.WARNING, "Failed to stop music player", e);
+            LOGGER.warning("Failed to stop music player: " + e.getMessage());
         } finally {
             musicPlayer = null;
         }
     }
 
-    public static void setMusicEnabled(boolean enabled) {
+    public void setMusicEnabled(boolean enabled) {
         musicEnabled = enabled;
         if (enabled) {
             playBackgroundMusic();
@@ -190,27 +156,31 @@ public class App extends Application {
         }
     }
 
-    public static boolean isMusicEnabled() {
+    public boolean isMusicEnabled() {
         return musicEnabled;
     }
 
+    public Stage getPrimaryStage() {
+        return primaryStage;
+    }
+
+    public static App getInstance() {
+        return instance;
+    }
+
     @Override
-    public void stop() {
+    public void stop() throws Exception {
         shutdownMusicPlayer();
 
         if (gameController != null) {
             try {
                 gameController.stop();
             } catch (RuntimeException e) {
-                LOGGER.log(java.util.logging.Level.WARNING, "Failed to stop game controller on shutdown", e);
+                LOGGER.warning("Failed to stop game controller: " + e.getMessage());
             }
         }
 
-        try {
-            super.stop();
-        } catch (Exception e) {
-            LOGGER.log(java.util.logging.Level.WARNING, "Failed to stop application cleanly", e);
-        }
+        super.stop();
     }
 
     private void exitProgram(WindowEvent evt) {

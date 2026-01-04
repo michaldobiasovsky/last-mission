@@ -8,6 +8,7 @@ import lab.score.Score;
 import lab.score.ScoreException;
 import lab.score.ScoreRepository;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -20,83 +21,49 @@ public class MainMenuController {
     @FXML private Button resetScoreButton;
     @FXML private Button muteButton;
 
+    private App app;
+
+    public void setApp(App app) {
+        this.app = app;
+    }
+
     @FXML
     void startGame(ActionEvent event) {
         Level levelToStart = chooseLevelToStart();
 
         if (levelToStart != null) {
-            App.showGame(levelToStart);
+            try {
+                app.switchToGame(levelToStart);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @FXML
-    public void showLevels() {
-        App.showLevelsSelection();
+    public void showLevels(ActionEvent event) {
+        try {
+            app.switchToLevelsSelection();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-
 
     @FXML
     void resetScores(ActionEvent event) {
         try {
-            ScoreRepository.save(new ArrayList<>());
+            ScoreRepository repository = new ScoreRepository();
+            repository.save(new ArrayList<>());
             updateStartButtonText();
-        } catch (ScoreException e) {
-            // ignore
-        }
-    }
-
-    @FXML
-    void exitApp(ActionEvent event) {
-        Platform.exit();
-        System.exit(0);
-    }
-
-    @FXML
-    void initialize() {
-        assert exitButton != null : "fx:id=\"exitButton\" was not injected: check your FXML file 'mainMenu.fxml'.";
-        assert startButton != null : "fx:id=\"startButton\" was not injected: check your FXML file 'mainMenu.fxml'.";
-
-
-        boolean musicOn = true;
-        try {
-            var opt = MusicSettings.loadMusicSetting();
-            if (opt.isPresent()) {
-                musicOn = opt.get();
-            }
-        } catch (Exception ignored) {
-            // Intentionally ignored: if loading the music setting fails, fall back to the default value.
-        }
-
-        App.setMusicEnabled(musicOn);
-        updateMuteButtonText(musicOn);
-    }
-
-    private void updateMuteButtonText(boolean musicOn) {
-        if (muteButton != null) {
-            muteButton.setText(musicOn ? "MUSIC ON" : "MUSIC OFF");
-        }
-    }
-
-    @FXML
-    private void toggleMusic(ActionEvent event) {
-        boolean newState = !App.isMusicEnabled();
-        App.setMusicEnabled(newState);
-        updateMuteButtonText(newState);
-        try {
-            MusicSettings.saveMusicSetting(newState);
         } catch (ScoreException e) {
             e.printStackTrace();
         }
     }
 
-    private void updateStartButtonText() {
-        boolean anyWon = hasAnyWonLevel();
-        startButton.setText(anyWon ? "Continue" : "New game");
-    }
-
     private boolean hasAnyWonLevel() {
         try {
-            List<Score> scores = ScoreRepository.load();
+            ScoreRepository repository = new ScoreRepository();
+            List<Score> scores = repository.load();
             return scores.stream().anyMatch(Score::isUnlocked);
         } catch (ScoreException e) {
             return false;
@@ -104,10 +71,11 @@ public class MainMenuController {
     }
 
     private Level chooseLevelToStart() {
-        List<Level> levels = LevelRepository.loadDefaults();
+        List<Level> levels = new LevelRepository().loadDefaults();
         List<Score> scores;
         try {
-            scores = ScoreRepository.load();
+            ScoreRepository repository = new ScoreRepository();
+            scores = repository.load();
         } catch (ScoreException e) {
             scores = new ArrayList<>();
         }
@@ -121,6 +89,56 @@ public class MainMenuController {
 
         return levels.stream()
             .max(Comparator.comparingInt(Level::getId))
-            .orElseGet(() -> levels.isEmpty() ? null : levels.get(levels.size() - 1));
+            .orElse(levels.isEmpty() ? null : levels.get(levels.size() - 1));
+    }
+
+    @FXML
+    void exitApp(ActionEvent event) {
+        Platform.exit();
+        System.exit(0);
+    }
+
+    @FXML
+    void initialize() {
+        boolean musicOn = true;
+        try {
+            var opt = new MusicSettings().loadMusicSetting();
+            if (opt.isPresent()) {
+                musicOn = opt.get();
+            }
+        } catch (Exception ignored) {
+            // Intentionally ignored
+        }
+
+        if (app != null) {
+            app.setMusicEnabled(musicOn);
+        }
+        updateMuteButtonText(musicOn);
+    }
+
+    private void updateMuteButtonText(boolean musicOn) {
+        if (muteButton != null) {
+            muteButton.setText(musicOn ? "MUSIC ON" : "MUSIC OFF");
+        }
+    }
+
+    @FXML
+    private void toggleMusic(ActionEvent event) {
+        if (app == null) return;
+
+        boolean newState = !app.isMusicEnabled();
+        app.setMusicEnabled(newState);
+        updateMuteButtonText(newState);
+
+        try {
+            new MusicSettings().saveMusicSetting(newState);
+        } catch (ScoreException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updateStartButtonText() {
+        boolean anyWon = hasAnyWonLevel();
+        startButton.setText(anyWon ? "Continue" : "New game");
     }
 }
