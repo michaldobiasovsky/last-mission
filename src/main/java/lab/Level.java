@@ -28,10 +28,6 @@ public record Level(int id, String name, String backgroundImagePath,
         return neededLemmings();
     }
 
-    public Point2D getEntryPosition() {
-        return entryPosition();
-    }
-
     public List<Barrier> getBarriers() {
         return barriers();
     }

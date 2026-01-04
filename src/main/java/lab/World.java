@@ -3,7 +3,6 @@ package lab;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class World {
@@ -45,10 +44,6 @@ public class World {
         return barriers;
     }
 
-    public List<Door> getDoors() {
-        return doors;
-    }
-
     public int getExitedCount() {
         return exitedCount;
     }
@@ -78,23 +73,6 @@ public class World {
             this.remaining = remaining;
             this.interval = interval;
         }
-    }
-
-    public List<Drawable> getDrawables() {
-        List<Drawable> all = new ArrayList<>();
-        all.addAll(lemmings);
-        all.addAll(barriers);
-        all.addAll(doors);
-        all.sort(Comparator.comparingDouble(d -> ((HasBoundingBox) d).getY()));
-        return all;
-    }
-
-    public List<HasBoundingBox> getCollidables() {
-        List<HasBoundingBox> all = new ArrayList<>();
-        all.addAll(lemmings);
-        all.addAll(barriers);
-        all.addAll(doors);
-        return all;
     }
 
     public void draw(GraphicsContext gc) {

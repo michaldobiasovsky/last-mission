@@ -8,4 +8,5 @@ module lab01 {
     requires java.logging;
     opens lab to javafx.fxml;
     exports lab;
+    exports lab.score;
 }

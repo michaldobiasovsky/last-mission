@@ -21,15 +21,12 @@ public class ScoreRepository {
         try {
             if (Files.exists(file)) {
                 List<String> existing = Files.readAllLines(file, StandardCharsets.UTF_8);
-                for (String l : existing) {
-                    if (l == null) continue;
-                    String t = l.trim();
-                    if (t.isEmpty()) continue;
-                    if (t.equalsIgnoreCase(MUSIC_ON) || t.equalsIgnoreCase(MUSIC_OFF)) {
-                        existingHeader = t;
-                    }
-                    break;
-                }
+                existingHeader = existing.stream()
+                    .filter(l -> l != null && !l.trim().isEmpty())
+                    .map(String::trim)
+                    .filter(t -> t.equalsIgnoreCase(MUSIC_ON) || t.equalsIgnoreCase(MUSIC_OFF))
+                    .findFirst()
+                    .orElse(null);
             }
 
             List<String> out = new ArrayList<>();
@@ -55,17 +52,21 @@ public class ScoreRepository {
             int lineNumber = 0;
             for (String line : lines) {
                 lineNumber++;
-                if (line == null) continue;
-                if (line.trim().isEmpty()) continue;
-                String t = line.trim();
-                if (t.equalsIgnoreCase(MUSIC_ON) || t.equalsIgnoreCase(MUSIC_OFF)) {
-                    continue;
+                if (isValidScoreLine(line)) {
+                    result.add(new Score(line, lineNumber));
                 }
-                result.add(new Score(line, lineNumber));
             }
         } catch (IOException e) {
             throw new ScoreException("Exception during loading: " + e.getMessage(), e);
         }
         return result;
+    }
+
+    private boolean isValidScoreLine(String line) {
+        if (line == null || line.trim().isEmpty()) {
+            return false;
+        }
+        String trimmed = line.trim();
+        return !trimmed.equalsIgnoreCase(MUSIC_ON) && !trimmed.equalsIgnoreCase(MUSIC_OFF);
     }
 }
