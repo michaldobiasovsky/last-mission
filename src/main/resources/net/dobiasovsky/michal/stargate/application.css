@@ -15,7 +15,7 @@
 
 .mainmenu-root {
     -fx-background-color: white;
-    -fx-background-image: url("/lab/intro.png");
+    -fx-background-image: url("intro.png");
     -fx-background-repeat: no-repeat;
     -fx-background-position: center center;
     -fx-background-size: cover;
