@@ -11,7 +11,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Lemming extends Entity {
+public class Lemming extends Entity implements DrawableSimulable{
 
     private final Logger logger;
     private final double scale;
@@ -82,10 +82,14 @@ public class Lemming extends Entity {
     }
 
     @Override
-    public double getWidth() { return width; }
+    public double getWidth() {
+        return width;
+    }
 
     @Override
-    public double getHeight() { return height; }
+    public double getHeight() {
+        return height;
+    }
 
     @Override
     public Rectangle2D getBoundingBox() {
