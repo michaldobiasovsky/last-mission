@@ -1,4 +1,4 @@
-package lab;
+package net.dobiasovsky.michal.stargate;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -6,9 +6,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import lab.score.Score;
-import lab.score.ScoreException;
-import lab.score.ScoreRepository;
+import net.dobiasovsky.michal.stargate.score.ScoreException;
+import net.dobiasovsky.michal.stargate.score.Score;
+import net.dobiasovsky.michal.stargate.score.ScoreRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;

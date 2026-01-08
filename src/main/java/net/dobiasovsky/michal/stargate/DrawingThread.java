@@ -1,4 +1,4 @@
-package lab;
+package net.dobiasovsky.michal.stargate;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;

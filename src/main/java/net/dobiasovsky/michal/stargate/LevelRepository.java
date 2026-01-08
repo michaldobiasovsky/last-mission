@@ -1,4 +1,4 @@
-package lab;
+package net.dobiasovsky.michal.stargate;
 
 import javafx.geometry.Point2D;
 
@@ -29,7 +29,7 @@ public class LevelRepository {
         Level l1 = new Level(
             1,
             "First steps",
-            "/lab/level1.png",
+            "/net/dobiasovsky/michal/stargate/level1.png",
             10,
             5,
             new Point2D(50, 50),
@@ -57,7 +57,7 @@ public class LevelRepository {
         Level l2 = new Level(
             2,
             "Deep Dive",
-            "/lab/level2.png",
+            "/net/dobiasovsky/michal/stargate/level2.png",
             15,
             5,
             new Point2D(50, 50),
@@ -89,7 +89,7 @@ public class LevelRepository {
         Level l3 = new Level(
             3,
             "Stairs",
-            "/lab/level3.png",
+            "level3.png",
             5,
             3,
             new Point2D(50, 50),
@@ -124,7 +124,7 @@ public class LevelRepository {
         Level l4 = new Level(
             4,
             "Broken space",
-            "/lab/level4.png",
+            "level4.png",
             15,
             5,
             new Point2D(50, 50),
@@ -153,7 +153,7 @@ public class LevelRepository {
         Level l5 = new Level(
             5,
             "Last Step",
-            "/lab/level5.png",
+            "level5.png",
             20,
             15,
             new Point2D(50, 50),

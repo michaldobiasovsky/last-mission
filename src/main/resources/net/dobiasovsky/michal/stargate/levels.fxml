@@ -13,7 +13,7 @@
             styleClass="levels-root"
             xmlns="http://javafx.com/javafx/23"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="lab.LevelsController">
+            fx:controller="net.dobiasovsky.michal.stargate.LevelsController">
 
     <top>
         <HBox spacing="12.0" BorderPane.alignment="CENTER">

@@ -1,4 +1,4 @@
-package lab.score;
+package net.dobiasovsky.michal.stargate.score;
 
 public class ScoreException extends Exception {
 

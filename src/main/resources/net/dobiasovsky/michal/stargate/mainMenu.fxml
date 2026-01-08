@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane prefHeight="769.0" prefWidth="1025.0" styleClass="mainmenu-root" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lab.MainMenuController">
+<StackPane prefHeight="769.0" prefWidth="1025.0" styleClass="mainmenu-root" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.dobiasovsky.michal.stargate.MainMenuController">
 
     <ImageView mouseTransparent="true">
         <Image url="@intro.png" />

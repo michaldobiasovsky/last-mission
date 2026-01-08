@@ -1,4 +1,4 @@
-package lab;
+package net.dobiasovsky.michal.stargate;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -13,7 +13,7 @@ public class Barrier extends Entity {
         super(x, y);
         this.width = width;
         this.height = height;
-        this.wallTexImage = new Image(Barrier.class.getResourceAsStream("/lab/texture.jpg"));
+        this.wallTexImage = new Image(Barrier.class.getResourceAsStream("texture.jpg"));
     }
 
     @Override

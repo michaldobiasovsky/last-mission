@@ -1,12 +1,12 @@
-module lab01 {
+module net.dobiasovsky.michal.stargate {
     requires transitive javafx.controls;
     requires javafx.fxml;
     requires javafx.media;
-    requires javafx.base;
-    requires java.desktop;
     requires javafx.graphics;
     requires java.logging;
-    opens lab to javafx.fxml;
-    exports lab;
-    exports lab.score;
+
+    opens net.dobiasovsky.michal.stargate to javafx.fxml;
+    exports net.dobiasovsky.michal.stargate;
+
+    exports net.dobiasovsky.michal.stargate.score;
 }

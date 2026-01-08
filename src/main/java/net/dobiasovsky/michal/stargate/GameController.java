@@ -1,4 +1,4 @@
-package lab;
+package net.dobiasovsky.michal.stargate;
 
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
@@ -12,9 +12,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import lab.score.Score;
-import lab.score.ScoreException;
-import lab.score.ScoreRepository;
+import net.dobiasovsky.michal.stargate.score.Score;
+import net.dobiasovsky.michal.stargate.score.ScoreException;
+import net.dobiasovsky.michal.stargate.score.ScoreRepository;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -354,8 +354,8 @@ public class GameController {
         dialog.setTitle(title);
         dialog.setHeaderText(header);
 
-        dialog.getDialogPane().getStylesheets().add(App.class.getResource("/lab/application.css").toExternalForm());
-        Image iconImage = new Image(getClass().getResourceAsStream("/lab/stay.gif"));
+        dialog.getDialogPane().getStylesheets().add(App.class.getResource("application.css").toExternalForm());
+        Image iconImage = new Image(getClass().getResourceAsStream("stay.gif"));
         ImageView imageView = new ImageView(iconImage);
         imageView.setFitHeight(48);
         imageView.setFitWidth(48);

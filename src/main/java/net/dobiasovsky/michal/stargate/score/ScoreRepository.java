@@ -1,4 +1,4 @@
-package lab.score;
+package net.dobiasovsky.michal.stargate.score;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

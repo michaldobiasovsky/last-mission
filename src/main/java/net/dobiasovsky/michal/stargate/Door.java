@@ -1,4 +1,4 @@
-package lab;
+package net.dobiasovsky.michal.stargate;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -14,8 +14,8 @@ public class Door extends Entity {
 
     public Door(double x, double y, DoorType type) {
         super(x, y);
-        this.entryImg = new Image(Door.class.getResourceAsStream("/lab/stargate.gif"));
-        this.exitImg = new Image(Door.class.getResourceAsStream("/lab/rocket.gif"));
+        this.entryImg = new Image(Door.class.getResourceAsStream("stargate.gif"));
+        this.exitImg = new Image(Door.class.getResourceAsStream("rocket.gif"));
 
         Image base = (type == DoorType.EXIT) ? exitImg : entryImg;
         this.width = base.getWidth() * SCALE;

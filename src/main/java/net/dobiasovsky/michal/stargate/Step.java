@@ -1,4 +1,4 @@
-package lab;
+package net.dobiasovsky.michal.stargate;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -22,8 +22,8 @@ public class Step extends Barrier {
 
     private Image loadStairsTexture() {
         try (InputStream in = Objects.requireNonNull(
-            Step.class.getResourceAsStream("/lab/textureStairs.jpg"),
-            "Resource not found: /lab/textureStairs.jpg"
+            Step.class.getResourceAsStream("textureStairs.jpg"),
+            "Resource not found: textureStairs.jpg"
         )) {
             return new Image(in);
         } catch (IOException e) {

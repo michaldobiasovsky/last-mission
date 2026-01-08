@@ -1,4 +1,4 @@
-package lab;
+package net.dobiasovsky.michal.stargate;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -45,7 +45,7 @@ public class App extends Application {
             switchToMainMenu();
             setMusicEnabled(musicEnabled);
 
-            Image iconImage = new Image(getClass().getResourceAsStream("/lab/stay.gif"));
+            Image iconImage = new Image(getClass().getResourceAsStream("stay.gif"));
             primaryStage.getIcons().add(iconImage);
 
             primaryStage.show();
@@ -57,7 +57,7 @@ public class App extends Application {
     }
 
     public void switchToMainMenu() throws IOException {
-        FXMLLoader menuLoader = new FXMLLoader(getClass().getResource("/lab/mainMenu.fxml"));
+        FXMLLoader menuLoader = new FXMLLoader(getClass().getResource("mainMenu.fxml"));
         Parent root = menuLoader.load();
 
         MainMenuController menuController = menuLoader.getController();
@@ -69,7 +69,7 @@ public class App extends Application {
     }
 
     public void switchToLevelsSelection() throws IOException {
-        FXMLLoader levelsLoader = new FXMLLoader(getClass().getResource("/lab/levels.fxml"));
+        FXMLLoader levelsLoader = new FXMLLoader(getClass().getResource("/net/dobiasovsky/michal/stargate/levels.fxml"));
         Parent root = levelsLoader.load();
 
         LevelsController levelsController = levelsLoader.getController();
@@ -83,7 +83,7 @@ public class App extends Application {
 
 
     public void switchToGame(Level level) throws IOException {
-        FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("/lab/gameWindow.fxml"));
+        FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("gameWindow.fxml"));
         Parent root = gameLoader.load();
 
         gameController = gameLoader.getController();
@@ -98,7 +98,7 @@ public class App extends Application {
     }
 
     private void applyCommonSceneStyles(Scene scene) {
-        URL cssUrl = getClass().getResource("/lab/application.css");
+        URL cssUrl = getClass().getResource("application.css");
         if (cssUrl != null) {
             scene.getStylesheets().add(cssUrl.toExternalForm());
         }
@@ -110,7 +110,7 @@ public class App extends Application {
                 musicPlayer.dispose();
             }
 
-            URL musicUrl = getClass().getResource("/lab/cosmo.mp3");
+            URL musicUrl = getClass().getResource("/net/dobiasovsky/michal/stargate/cosmo.mp3");
             if (musicUrl == null) {
                 logger.warning("Background music file not found");
                 return;

@@ -1,4 +1,4 @@
-package lab;
+package net.dobiasovsky.michal.stargate;
 
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
@@ -50,10 +50,10 @@ public class Lemming extends Entity implements DrawableSimulable{
         this.climbTolerance = 2.0;
         this.directionCooldownSec = 0.15;
 
-        this.walkRight = loadImage("/lab/cosmo_right.gif");
-        this.walkLeft = loadImage("/lab/cosmo_left.gif");
-        this.blockImg = loadImage("/lab/stop.gif");
-        this.weeSound = loadSound("/lab/wee.mp3");
+        this.walkRight = loadImage("cosmo_right.gif");
+        this.walkLeft = loadImage("cosmo_left.gif");
+        this.blockImg = loadImage("stop.gif");
+        this.weeSound = loadSound("wee.mp3");
 
         this.direction = 1;
         this.velocityY = 0;
