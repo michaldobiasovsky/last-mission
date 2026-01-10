@@ -6,24 +6,21 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
 public final class MusicSettings {
 
-    private final String fileName;
     private final String musicOn;
     private final String musicOff;
 
     public MusicSettings() {
-        this.fileName = "scores.csv";
         this.musicOn = "MUSIC ON";
         this.musicOff = "MUSIC OFF";
     }
 
     public Optional<Boolean> loadMusicSetting() {
-        Path p = Paths.get(fileName);
+        Path p = FilePathResolver.getMusicFilePath();
         if (!Files.exists(p)) return Optional.empty();
 
         try {
@@ -55,35 +52,12 @@ public final class MusicSettings {
     }
 
     public void saveMusicSetting(boolean enabled) throws ScoreException {
-        Path p = Paths.get(fileName);
-        String header = enabled ? musicOn : musicOff;
+        Path p = FilePathResolver.getMusicFilePath();
+        p.getParent().toFile().mkdirs();
+        String content = enabled ? musicOn : musicOff;
 
         try {
-            List<String> existing = Files.exists(p)
-                ? Files.readAllLines(p, StandardCharsets.UTF_8)
-                : List.of();
-
-            int firstNonEmptyIdx = -1;
-            for (int i = 0; i < existing.size(); i++) {
-                if (!existing.get(i).trim().isEmpty()) {
-                    firstNonEmptyIdx = i;
-                    break;
-                }
-            }
-
-            if (firstNonEmptyIdx != -1) {
-                String first = existing.get(firstNonEmptyIdx).trim();
-                if (first.equalsIgnoreCase(musicOn) || first.equalsIgnoreCase(musicOff)) {
-                    existing = new java.util.ArrayList<>(existing);
-                    existing.remove(firstNonEmptyIdx);
-                }
-            }
-
-            java.util.ArrayList<String> out = new java.util.ArrayList<>();
-            out.add(header);
-            out.addAll(existing);
-
-            Files.write(p, out, StandardCharsets.UTF_8);
+            Files.write(p, content.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new ScoreException("Error during music setting " + e.getMessage(), e);
         }

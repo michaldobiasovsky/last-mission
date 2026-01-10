@@ -1,36 +1,21 @@
 package net.dobiasovsky.michal.stargate.score;
 
+import net.dobiasovsky.michal.stargate.FilePathResolver;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ScoreRepository {
 
-    private static final String FILE_NAME = "scores.csv";
-    private static final String MUSIC_ON = "MUSIC ON";
-    private static final String MUSIC_OFF = "MUSIC OFF";
-
     public void save(List<Score> scores) throws ScoreException {
-        Path file = Paths.get(FILE_NAME);
-        String existingHeader = null;
+        Path file = FilePathResolver.getScoresFilePath();
+        file.getParent().toFile().mkdirs();
 
         try {
-            if (Files.exists(file)) {
-                List<String> existing = Files.readAllLines(file, StandardCharsets.UTF_8);
-                existingHeader = existing.stream()
-                    .filter(l -> l != null && !l.trim().isEmpty())
-                    .map(String::trim)
-                    .filter(t -> t.equalsIgnoreCase(MUSIC_ON) || t.equalsIgnoreCase(MUSIC_OFF))
-                    .findFirst()
-                    .orElse(null);
-            }
-
             List<String> out = new ArrayList<>();
-            if (existingHeader != null) out.add(existingHeader);
             for (Score s : scores) {
                 out.add(s.toCsvLine());
             }
@@ -42,7 +27,7 @@ public class ScoreRepository {
 
     public List<Score> load() throws ScoreException {
         List<Score> result = new ArrayList<>();
-        Path file = Paths.get(FILE_NAME);
+        Path file = FilePathResolver.getScoresFilePath();
         if (!Files.exists(file)) {
             return result;
         }
@@ -63,10 +48,6 @@ public class ScoreRepository {
     }
 
     private boolean isValidScoreLine(String line) {
-        if (line == null || line.trim().isEmpty()) {
-            return false;
-        }
-        String trimmed = line.trim();
-        return !trimmed.equalsIgnoreCase(MUSIC_ON) && !trimmed.equalsIgnoreCase(MUSIC_OFF);
+        return line != null && !line.trim().isEmpty();
     }
 }

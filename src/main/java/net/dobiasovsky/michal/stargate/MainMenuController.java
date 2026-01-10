@@ -100,20 +100,14 @@ public class MainMenuController {
 
     @FXML
     void initialize() {
-        boolean musicOn = true;
-        try {
-            var opt = new MusicSettings().loadMusicSetting();
-            if (opt.isPresent()) {
-                musicOn = opt.get();
-            }
-        } catch (Exception ignored) {
-            // Intentionally ignored
-        }
+        updateStartButtonText();
+    }
 
+    public void updateMusicButton() {
+        // Tato metoda se volá z App.java po načtení hudby
         if (app != null) {
-            app.setMusicEnabled(musicOn);
+            updateMuteButtonText(app.isMusicEnabled());
         }
-        updateMuteButtonText(musicOn);
     }
 
     private void updateMuteButtonText(boolean musicOn) {

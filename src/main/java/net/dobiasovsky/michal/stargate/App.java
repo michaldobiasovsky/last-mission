@@ -42,6 +42,8 @@ public class App extends Application {
             primaryStage.setTitle("STARGATE");
             primaryStage.setResizable(false);
 
+            loadMusicSettingFromFile();
+
             switchToMainMenu();
             setMusicEnabled(musicEnabled);
 
@@ -56,12 +58,24 @@ public class App extends Application {
         }
     }
 
+    private void loadMusicSettingFromFile() {
+        try {
+            var opt = new MusicSettings().loadMusicSetting();
+            if (opt.isPresent()) {
+                musicEnabled = opt.get();
+            }
+        } catch (Exception ignored) {
+            // Pokud se hudební nastavení nepodaří načíst, zůstane zapnuto
+        }
+    }
+
     public void switchToMainMenu() throws IOException {
         FXMLLoader menuLoader = new FXMLLoader(getClass().getResource("mainMenu.fxml"));
         Parent root = menuLoader.load();
 
         MainMenuController menuController = menuLoader.getController();
         menuController.setApp(this);
+        menuController.updateMusicButton(); // Aktualizuj tlačítko po načtení hudby
 
         Scene scene = new Scene(root, appWidth, appHeight);
         applyCommonSceneStyles(scene);
