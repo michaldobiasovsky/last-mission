@@ -31,6 +31,11 @@
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -44,12 +49,6 @@
             <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>cz.vsb.fei</groupId>
-            <artifactId>kelvin-java-unittest-support</artifactId>
-            <version>[0.1.4,)</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <repositories>
@@ -58,14 +57,6 @@
             <url>https://artifactory.cs.vsb.cz/repository/education-releases/</url>
         </repository>
     </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://repo.maven.apache.org/maven2</url>
-        </pluginRepository>
-    </pluginRepositories>
 
     <build>
         <plugins>
@@ -113,15 +104,15 @@
                 <version>1.6.0</version>
                 <configuration>
                     <name>Stargate</name>
-                    <appVersion>1.0.0</appVersion>
-                    <vendor>Michal Dobiasovsky</vendor>
-                    <destination>target/dist</destination>
-
+                    <appVersion>1.0.1</appVersion>
+                    <vendor>Michal Dobiášovský</vendor>
+                    <destination>${project.build.directory}/dist</destination>
                     <icon>src/main/resources/icon.ico</icon>
+                    <winUpgradeUuid>f7910fe4-c425-44ac-a159-12edba0c3cfa</winUpgradeUuid>
 
                     <modulePaths>
-                        <modulePath>target/lib</modulePath>
-                        <modulePath>target/${project.build.finalName}.jar</modulePath>
+                        <modulePath>${project.build.directory}/lib</modulePath>
+                        <modulePath>${project.build.directory}/${project.build.finalName}.jar</modulePath>
                     </modulePaths>
 
                     <module>net.dobiasovsky.michal.stargate/net.dobiasovsky.michal.stargate.App</module>
@@ -130,7 +121,8 @@
 
                     <winMenu>true</winMenu>
                     <winShortcut>true</winShortcut>
-                    <winMenuGroup>Games</winMenuGroup> <winDirChooser>true</winDirChooser>
+                    <winMenuGroup>Games</winMenuGroup>
+                    <winDirChooser>true</winDirChooser>
                     <winConsole>false</winConsole>
                 </configuration>
                 <executions>

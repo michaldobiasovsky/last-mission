@@ -24,7 +24,7 @@ public class FilePathResolver {
         String osName = System.getProperty("os.name").toLowerCase();
 
         if (osName.contains("win")) {
-            // Windows: AppData\Local\StarGate
+            // Windows: AppData\Roaming\StarGate
             String appData = System.getenv("APPDATA");
             return Paths.get(appData, APP_DIR, fileName);
         } else if (osName.contains("mac")) {
