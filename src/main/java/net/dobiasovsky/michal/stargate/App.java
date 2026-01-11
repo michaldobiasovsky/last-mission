@@ -1,6 +1,7 @@
 package net.dobiasovsky.michal.stargate;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -9,9 +10,14 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.beans.value.ChangeListener;
+import javafx.scene.Group;
+import javafx.scene.layout.Pane;
+import javafx.scene.transform.Scale;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 public class App extends Application {
@@ -21,10 +27,13 @@ public class App extends Application {
     public App() {
         this.appWidth = 1024;
         this.appHeight = 768;
+        this.aspectRatio = appWidth / appHeight;
     }
 
     private final double appWidth;
     private final double appHeight;
+    private final double aspectRatio;
+    private final AtomicBoolean resizing = new AtomicBoolean(false);
 
     private Stage primaryStage;
     private MediaPlayer musicPlayer;
@@ -40,7 +49,9 @@ public class App extends Application {
         try {
             this.primaryStage = primaryStage;
             primaryStage.setTitle("STARGATE");
-            primaryStage.setResizable(false);
+            primaryStage.setResizable(true);
+            primaryStage.setMinWidth(appWidth / 2 + 16);
+            primaryStage.setMinHeight(appHeight / 2 + 39);
 
             loadMusicSettingFromFile();
 
@@ -51,6 +62,7 @@ public class App extends Application {
             primaryStage.getIcons().add(iconImage);
 
             primaryStage.show();
+            installAspectRatioListener(primaryStage);
             primaryStage.setOnCloseRequest(this::exitProgram);
         } catch (Exception e) {
             logger.severe("Failed to start application: " + e.getMessage());
@@ -75,9 +87,9 @@ public class App extends Application {
 
         MainMenuController menuController = menuLoader.getController();
         menuController.setApp(this);
-        menuController.updateMusicButton(); // Aktualizuj tlačítko po načtení hudby
+        menuController.updateMusicButton();
 
-        Scene scene = new Scene(root, appWidth, appHeight);
+        Scene scene = createScaledScene(root);
         applyCommonSceneStyles(scene);
         primaryStage.setScene(scene);
     }
@@ -89,7 +101,7 @@ public class App extends Application {
         LevelsController levelsController = levelsLoader.getController();
         levelsController.setApp(this);
 
-        Scene scene = new Scene(root, appWidth, appHeight);
+        Scene scene = createScaledScene(root);
         applyCommonSceneStyles(scene);
         primaryStage.setScene(scene);
     }
@@ -103,12 +115,88 @@ public class App extends Application {
         gameController = gameLoader.getController();
         gameController.setApp(this);
 
-        Scene scene = new Scene(root, appWidth, appHeight);
+        Scene scene = createScaledScene(root);
         applyCommonSceneStyles(scene);
         primaryStage.setScene(scene);
-        primaryStage.sizeToScene();
 
         gameController.startLevel(level);
+    }
+
+    private Scene createScaledScene(Parent view) {
+        Group group = new Group(view);
+        Pane wrapper = new Pane(group);
+        wrapper.setStyle("-fx-background-color: black;");
+
+        Scene scene = new Scene(wrapper, appWidth, appHeight);
+
+        Scale scale = new Scale(1, 1, 0, 0);
+        group.getTransforms().setAll(scale);
+
+        ChangeListener<Number> resize = (obs, o, n) -> {
+            double sceneW = scene.getWidth();
+            double sceneH = scene.getHeight();
+            if (sceneH <= 0 || sceneW <= 0) return;
+
+            double factor = sceneH / appHeight;
+
+            scale.setX(factor);
+            scale.setY(factor);
+
+            double scaledWidth = appWidth * factor;
+            double offsetX = (sceneW - scaledWidth) / 2;
+            group.setLayoutX(offsetX);
+        };
+        scene.widthProperty().addListener(resize);
+        scene.heightProperty().addListener(resize);
+
+        Platform.runLater(() -> resize.changed(null, null, null));
+
+        return scene;
+    }
+
+    private void installAspectRatioListener(Stage stage) {
+        stage.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene == null) return;
+            addSceneResizeListeners(stage, newScene);
+        });
+
+        if (stage.getScene() != null) {
+            addSceneResizeListeners(stage, stage.getScene());
+        }
+    }
+
+    private void addSceneResizeListeners(Stage stage, Scene scene) {
+        scene.widthProperty().addListener((o, oldVal, newVal) -> {
+            if (!resizing.compareAndSet(false, true)) return;
+            Platform.runLater(() -> {
+                try {
+                    double decorH = stage.getHeight() - scene.getHeight();
+                    double targetSceneH = scene.getWidth() / aspectRatio;
+                    double targetStageH = targetSceneH + decorH;
+                    if (Math.abs(stage.getHeight() - targetStageH) > 2) {
+                        stage.setHeight(targetStageH);
+                    }
+                } finally {
+                    resizing.set(false);
+                }
+            });
+        });
+
+        scene.heightProperty().addListener((o, oldVal, newVal) -> {
+            if (!resizing.compareAndSet(false, true)) return;
+            Platform.runLater(() -> {
+                try {
+                    double decorW = stage.getWidth() - scene.getWidth();
+                    double targetSceneW = scene.getHeight() * aspectRatio;
+                    double targetStageW = targetSceneW + decorW;
+                    if (Math.abs(stage.getWidth() - targetStageW) > 2) {
+                        stage.setWidth(targetStageW);
+                    }
+                } finally {
+                    resizing.set(false);
+                }
+            });
+        });
     }
 
     private void applyCommonSceneStyles(Scene scene) {
