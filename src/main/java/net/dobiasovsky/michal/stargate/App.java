@@ -56,13 +56,14 @@ public class App extends Application {
             loadMusicSettingFromFile();
 
             switchToMainMenu();
-            setMusicEnabled(musicEnabled);
 
             Image iconImage = new Image(getClass().getResourceAsStream("stay.gif"));
             primaryStage.getIcons().add(iconImage);
 
             primaryStage.show();
             installAspectRatioListener(primaryStage);
+
+            setMusicEnabled(musicEnabled);
             primaryStage.setOnCloseRequest(this::exitProgram);
         } catch (Exception e) {
             logger.severe("Failed to start application: " + e.getMessage());
