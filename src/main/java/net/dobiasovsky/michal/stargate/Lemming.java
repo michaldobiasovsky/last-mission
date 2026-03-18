@@ -9,6 +9,7 @@ import javafx.scene.media.AudioClip;
 import java.io.InputStream;
 import java.net.URL;
 
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,6 +30,7 @@ public class Lemming extends Entity implements DrawableSimulable{
 
     private double width;
     private double height;
+    @Getter
     private Role role;
     private int direction;
     private double velocityY;
@@ -101,8 +103,6 @@ public class Lemming extends Entity implements DrawableSimulable{
         direction *= -1;
         directionCooldown = directionCooldownSec;
     }
-
-    public Role getRole() { return role; }
 
     public void setRole(Role r) {
         this.role = r;
