@@ -18,11 +18,13 @@ import javafx.scene.transform.Scale;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class App extends Application {
 
-    private final Logger logger = Logger.getLogger(getClass().getName());
+    private static final Logger logger = LogManager.getLogger(App.class);
 
     public App() {
         this.appWidth = 1024;
@@ -47,6 +49,7 @@ public class App extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
+            logger.info("Application startup initiated");
             this.primaryStage = primaryStage;
             primaryStage.setTitle("STARGATE");
             primaryStage.setResizable(true);
@@ -65,9 +68,9 @@ public class App extends Application {
 
             setMusicEnabled(musicEnabled);
             primaryStage.setOnCloseRequest(this::exitProgram);
+            logger.info("Application startup completed");
         } catch (Exception e) {
-            logger.severe("Failed to start application: " + e.getMessage());
-            e.printStackTrace();
+            logger.fatal("Failed to start application", e);
         }
     }
 
@@ -76,13 +79,16 @@ public class App extends Application {
             var opt = new MusicSettings().loadMusicSetting();
             if (opt.isPresent()) {
                 musicEnabled = opt.get();
+                logger.debug("Loaded persisted music setting: {}", musicEnabled);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
             // Pokud se hudební nastavení nepodaří načíst, zůstane zapnuto
+            logger.warn("Failed to load music setting, keeping defaults", e);
         }
     }
 
     public void switchToMainMenu() throws IOException {
+        logger.info("Switching scene to main menu");
         FXMLLoader menuLoader = new FXMLLoader(getClass().getResource("mainMenu.fxml"));
         Parent root = menuLoader.load();
 
@@ -96,6 +102,7 @@ public class App extends Application {
     }
 
     public void switchToLevelsSelection() throws IOException {
+        logger.info("Switching scene to levels selection");
         FXMLLoader levelsLoader = new FXMLLoader(getClass().getResource("/net/dobiasovsky/michal/stargate/levels.fxml"));
         Parent root = levelsLoader.load();
 
@@ -110,6 +117,7 @@ public class App extends Application {
 
 
     public void switchToGame(Level level) throws IOException {
+        logger.info("Switching scene to game for level {}", level);
         FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("gameWindow.fxml"));
         Parent root = gameLoader.load();
 
@@ -215,7 +223,7 @@ public class App extends Application {
 
             URL musicUrl = getClass().getResource("/net/dobiasovsky/michal/stargate/cosmo.mp3");
             if (musicUrl == null) {
-                logger.warning("Background music file not found");
+                logger.warn("Background music file not found");
                 return;
             }
 
@@ -224,8 +232,9 @@ public class App extends Application {
             musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
             musicPlayer.setVolume(0.3);
             musicPlayer.play();
+            logger.debug("Background music started");
         } catch (RuntimeException e) {
-            logger.warning("Failed to play background music: " + e.getMessage());
+            logger.error("Failed to play background music", e);
         }
     }
 
@@ -236,8 +245,9 @@ public class App extends Application {
         try {
             musicPlayer.stop();
             musicPlayer.dispose();
+            logger.debug("Background music stopped");
         } catch (RuntimeException e) {
-            logger.warning("Failed to stop music player: " + e.getMessage());
+            logger.warn("Failed to stop music player", e);
         } finally {
             musicPlayer = null;
         }
@@ -245,6 +255,7 @@ public class App extends Application {
 
     public void setMusicEnabled(boolean enabled) {
         musicEnabled = enabled;
+        logger.info("Music toggled: {}", enabled ? "enabled" : "disabled");
         if (enabled) {
             playBackgroundMusic();
         } else {
@@ -264,7 +275,7 @@ public class App extends Application {
             try {
                 gameController.stop();
             } catch (RuntimeException e) {
-                logger.warning("Failed to stop game controller: " + e.getMessage());
+                logger.warn("Failed to stop game controller", e);
             }
         }
 
@@ -272,6 +283,7 @@ public class App extends Application {
     }
 
     private void exitProgram(WindowEvent evt) {
+        logger.info("Exit requested by user");
         System.exit(0);
     }
 }

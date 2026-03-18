@@ -8,12 +8,13 @@ import javafx.scene.media.AudioClip;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Lemming extends Entity implements DrawableSimulable{
 
-    private final Logger logger;
+    private static final Logger logger = LogManager.getLogger(Lemming.class);
     private final double scale;
     private final double gravity;
     private final double speedMultiplier;
@@ -42,7 +43,6 @@ public class Lemming extends Entity implements DrawableSimulable{
 
     public Lemming(double x, double y) {
         super(x, y);
-        this.logger = Logger.getLogger(Lemming.class.getName());
         this.scale = 0.7;
         this.gravity = 400;
         this.speedMultiplier = 0.8;
@@ -75,7 +75,7 @@ public class Lemming extends Entity implements DrawableSimulable{
     private AudioClip loadSound(String path) {
         URL url = Lemming.class.getResource(path);
         if (url == null) {
-            logger.log(Level.SEVERE, "Sound not found: {0}", path);
+            logger.error("Sound not found: {}", path);
             return null;
         }
         return new AudioClip(url.toExternalForm());
@@ -325,6 +325,9 @@ public class Lemming extends Entity implements DrawableSimulable{
     }
 
     public void simulate(double deltaTime, World world) {
+        double previousX = getX();
+        double previousY = getY();
+
         if (directionCooldown > 0) {
             directionCooldown -= deltaTime;
         }
@@ -362,5 +365,7 @@ public class Lemming extends Entity implements DrawableSimulable{
             hasScreamed = false;
             hasTouchedGroundOnce = true;
         }
+
+        logger.trace("Lemming position changed from ({}, {}) to ({}, {})", previousX, previousY, getX(), getY());
     }
 }
