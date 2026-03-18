@@ -5,6 +5,7 @@ module net.dobiasovsky.michal.stargate {
     requires javafx.graphics;
     requires java.logging;
     requires org.apache.logging.log4j;
+    requires static lombok;
 
     opens net.dobiasovsky.michal.stargate to javafx.fxml;
     exports net.dobiasovsky.michal.stargate;

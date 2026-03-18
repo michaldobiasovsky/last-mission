@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import lombok.Getter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,6 +40,7 @@ public class App extends Application {
 
     private Stage primaryStage;
     private MediaPlayer musicPlayer;
+    @Getter
     private boolean musicEnabled = true;
     private GameController gameController;
 
@@ -261,10 +263,6 @@ public class App extends Application {
         } else {
             shutdownMusicPlayer();
         }
-    }
-
-    public boolean isMusicEnabled() {
-        return musicEnabled;
     }
 
     @Override

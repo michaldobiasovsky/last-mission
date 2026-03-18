@@ -2,12 +2,14 @@ package net.dobiasovsky.michal.stargate;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
+import lombok.Getter;
 
 public class Door extends Entity {
     private static final double SCALE = 0.7;
 
     private final double width;
     private final double height;
+    @Getter
     private final DoorType type;
     private final Image entryImg;
     private final Image exitImg;
@@ -25,7 +27,6 @@ public class Door extends Entity {
 
     @Override public double getWidth() { return width; }
     @Override public double getHeight() { return height; }
-    public DoorType getType() { return type; }
 
     @Override
     public void draw(GraphicsContext gc) {
