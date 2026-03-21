@@ -1,0 +1,30 @@
+@font-face {
+    font-family: 'Jersey 10';
+    src: url("Jersey10-Regular.ttf");
+}
+
+.root {
+    -fx-background-color: white;
+    -fx-font-family: 'Jersey 10';
+    -fx-font-size: 20px;
+}
+
+.button {
+    -fx-font-family: 'Jersey 10';
+}
+
+.mainmenu-root {
+    -fx-background-color: white;
+    -fx-background-image: url("intro.png");
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center center;
+    -fx-background-size: cover;
+}
+
+.levels-root {
+    -fx-background-color: white;
+}
+
+.details-root {
+    -fx-background-color: white;
+}

@@ -1,0 +1,30 @@
+# EditorConfig is awesome: https://editorconfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+# Matches multiple files with brace expansion notation
+# Set default charset
+[*.{js,java,xhtml,html,tpl,xml}]
+charset = utf-8
+
+# 4 space indentation
+[*.{js,java,xhtml,html,json,yml}]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.java]
+ij_java_use_single_class_imports = true
+ij_java_class_count_to_use_import_on_demand = 99999
+
+# Tab indentation (no size specified)
+[*.xml]
+indent_style = space
+indent_size = 4
+
