@@ -1,20 +1,39 @@
 package net.dobiasovsky.michal.stargate.score;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.ToString;
 import java.util.Objects;
 
-@ToString
+@Entity
+@Table(name = "scores")
 public class Score {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Getter
-    private final int level;
+    private Long id;
+
     @Getter
-    private final boolean unlocked;
+    @Column(nullable = false)
+    private int level;
     @Getter
-    private final long timeMillis;
+    @Column(nullable = false)
+    private boolean unlocked;
     @Getter
-    private final String playerName;
+    @Column(nullable = false)
+    private long timeMillis;
+    @Getter
+    @Column(nullable = false)
+    private String playerName;
+
+    public Score() {
+        // Required by JPA
+    }
 
     public Score(int level, boolean unlocked, long timeMillis, String playerName) {
         this.level = level;
