@@ -11,7 +11,7 @@ module net.dobiasovsky.michal.stargate {
     requires static lombok;
 
     opens net.dobiasovsky.michal.stargate to javafx.fxml;
-    opens net.dobiasovsky.michal.stargate.score to org.hibernate.orm.core;
+    opens net.dobiasovsky.michal.stargate.score to org.hibernate.orm.core, jakarta.persistence;
     exports net.dobiasovsky.michal.stargate;
 
     exports net.dobiasovsky.michal.stargate.score;

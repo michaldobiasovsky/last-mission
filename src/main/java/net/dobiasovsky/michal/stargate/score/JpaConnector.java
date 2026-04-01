@@ -4,7 +4,9 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class JpaConnector implements AutoCloseable {
 
@@ -20,7 +22,7 @@ public class JpaConnector implements AutoCloseable {
 
     public List<Score> loadAll() {
         return entityManager.createQuery(
-                "select s from Score s order by s.level asc, s.timeMillis asc",
+                "select s from Score s join fetch s.player order by s.level asc, s.timeMillis asc",
                 Score.class
             )
             .getResultList();
@@ -29,13 +31,19 @@ public class JpaConnector implements AutoCloseable {
     public void replaceAll(List<Score> scores) {
         executeInTransaction(() -> {
             entityManager.createQuery("delete from Score").executeUpdate();
+            entityManager.createQuery("delete from Player").executeUpdate();
+
+            Map<String, Player> playersByName = new HashMap<>();
             for (Score score : scores) {
-                entityManager.persist(new Score(
-                    score.getLevel(),
-                    score.isUnlocked(),
-                    score.getTime(),
-                    score.getPlayerName()
-                ));
+                String playerName = score.getPlayerName();
+                Player player = playersByName.get(playerName);
+                if (player == null) {
+                    player = new Player(playerName);
+                    entityManager.persist(player);
+                    playersByName.put(playerName, player);
+                }
+
+                entityManager.persist(new Score(score.getLevel(), score.isUnlocked(), score.getTime(), player));
             }
         });
     }

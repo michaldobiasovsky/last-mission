@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import java.util.Objects;
@@ -27,19 +29,25 @@ public class Score {
     @Getter
     @Column(nullable = false)
     private long timeMillis;
+
     @Getter
-    @Column(nullable = false)
-    private String playerName;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "player_id", nullable = false)
+    private Player player;
 
     public Score() {
         // Required by JPA
     }
 
     public Score(int level, boolean unlocked, long timeMillis, String playerName) {
+        this(level, unlocked, timeMillis, new Player(playerName));
+    }
+
+    public Score(int level, boolean unlocked, long timeMillis, Player player) {
         this.level = level;
         this.unlocked = unlocked;
         this.timeMillis = timeMillis;
-        this.playerName = playerName != null ? playerName : "";
+        this.player = player != null ? player : new Player("");
     }
 
     public Score(String line, int lineNumber) throws ScoreException {
@@ -57,7 +65,7 @@ public class Score {
                 String rawName = parts[3];
                 name = rawName.replace("\\;", ";").replace("\\\\", "\\");
             }
-            this.playerName = name;
+            this.player = new Player(name);
         } catch (NumberFormatException e) {
             throw new ScoreException("Parsing error at line " + lineNumber + ": " + line, e);
         }
@@ -69,12 +77,16 @@ public class Score {
     }
 
     public String getPlayerName() {
-        return playerName;
+        return player != null ? player.getName() : "";
     }
 
     public String toCsvLine() {
-        String escapedName = playerName.replace("\\", "\\\\").replace(";", "\\;");
+        String escapedName = getPlayerName().replace("\\", "\\\\").replace(";", "\\;");
         return String.format("%d;%s;%d;%s", level, unlocked ? "1" : "0", timeMillis, escapedName);
+    }
+
+    void setPlayer(Player player) {
+        this.player = player;
     }
 
     @Override
@@ -85,17 +97,17 @@ public class Score {
         return level == score.level &&
             unlocked == score.unlocked &&
             timeMillis == score.timeMillis &&
-            Objects.equals(playerName, score.playerName);
+            Objects.equals(getPlayerName(), score.getPlayerName());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(level, unlocked, timeMillis, playerName);
+        return Objects.hash(level, unlocked, timeMillis, getPlayerName());
     }
 
     @Override
     public String toString() {
         return String.format("Score{level=%d, unlocked=%b, timeMillis=%d, playerName=%s}",
-            level, unlocked, timeMillis, playerName);
+            level, unlocked, timeMillis, getPlayerName());
     }
 }
