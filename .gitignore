@@ -36,3 +36,5 @@ build/
 .DS_Store
 
 logs/
+/score-db.trace.db
+/score-db.mv.db
