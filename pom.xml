@@ -3,8 +3,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.dobiasovsky.michal</groupId>
-    <artifactId>stargate</artifactId>
+    <groupId>net.dobiasovsky</groupId>
+    <artifactId>lastmission</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
@@ -146,7 +146,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Name>net/dobiasovsky/michal/stargate/App</Name>
+                            <Name>net/dobiasovsky/lastmission/App</Name>
                             <Implementation-Build-Date>${maven.build.timestamp}</Implementation-Build-Date>
                             <Implementation-Title>${project.groupId}.${project.artifactId}</Implementation-Title>
                             <Implementation-Vendor>Michal Dobiášovský</Implementation-Vendor>
@@ -155,7 +155,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
-                            <mainClass>net.dobiasovsky.michal.stargate.App</mainClass>
+                            <mainClass>net.dobiasovsky.lastmission.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -166,7 +166,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>net.dobiasovsky.michal.stargate.App</mainClass>
+                    <mainClass>net.dobiasovsky.lastmission.App</mainClass>
                     <options>
                         <option>--enable-native-access=javafx.graphics,javafx.media</option>
                     </options>

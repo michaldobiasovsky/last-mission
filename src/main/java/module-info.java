@@ -1,4 +1,4 @@
-module net.dobiasovsky.michal.stargate {
+module net.dobiasovsky.lastmission {
     requires transitive javafx.controls;
     requires javafx.fxml;
     requires javafx.media;
@@ -10,9 +10,9 @@ module net.dobiasovsky.michal.stargate {
     requires com.h2database;
     requires static lombok;
 
-    opens net.dobiasovsky.michal.stargate to javafx.fxml;
-    opens net.dobiasovsky.michal.stargate.score to org.hibernate.orm.core, jakarta.persistence;
-    exports net.dobiasovsky.michal.stargate;
+    opens net.dobiasovsky.lastmission to javafx.fxml;
+    opens net.dobiasovsky.lastmission.score to org.hibernate.orm.core, jakarta.persistence;
+    exports net.dobiasovsky.lastmission;
 
-    exports net.dobiasovsky.michal.stargate.score;
+    exports net.dobiasovsky.lastmission.score;
 }
