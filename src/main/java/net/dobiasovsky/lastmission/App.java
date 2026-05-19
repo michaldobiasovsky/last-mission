@@ -17,6 +17,8 @@ import javafx.scene.transform.Scale;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.Getter;
@@ -43,6 +45,10 @@ public class App extends Application {
     private boolean musicEnabled = true;
     private GameController gameController;
 
+    private ResourceBundle getMessages() {
+        return ResourceBundle.getBundle("msg", Locale.getDefault());
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -56,6 +62,9 @@ public class App extends Application {
             primaryStage.setResizable(true);
             primaryStage.setMinWidth(appWidth / 2 + 16);
             primaryStage.setMinHeight(appHeight / 2 + 39);
+
+            // Initialize localization
+            initializeLocalization();
 
             loadMusicSettingFromFile();
 
@@ -91,6 +100,7 @@ public class App extends Application {
     public void switchToMainMenu() throws IOException {
         log.info("Switching scene to main menu");
         FXMLLoader menuLoader = new FXMLLoader(getClass().getResource("mainMenu.fxml"));
+        menuLoader.setResources(getMessages());
         Parent root = menuLoader.load();
 
         MainMenuController menuController = menuLoader.getController();
@@ -105,6 +115,7 @@ public class App extends Application {
     public void switchToLevelsSelection() throws IOException {
         log.info("Switching scene to levels selection");
         FXMLLoader levelsLoader = new FXMLLoader(getClass().getResource("levels.fxml"));
+        levelsLoader.setResources(getMessages());
         Parent root = levelsLoader.load();
 
         LevelsController levelsController = levelsLoader.getController();
@@ -120,6 +131,7 @@ public class App extends Application {
     public void switchToGame(Level level) throws IOException {
         log.info("Switching scene to game for level {}", level);
         FXMLLoader gameLoader = new FXMLLoader(getClass().getResource("gameWindow.fxml"));
+        gameLoader.setResources(getMessages());
         Parent root = gameLoader.load();
 
         gameController = gameLoader.getController();
@@ -262,6 +274,12 @@ public class App extends Application {
         } else {
             shutdownMusicPlayer();
         }
+    }
+
+    private void initializeLocalization() {
+        Locale currentLocale = Locale.getDefault();
+        log.info("Application locale: {}", currentLocale.getDisplayName());
+        log.debug("Language: {}, Country: {}", currentLocale.getLanguage(), currentLocale.getCountry());
     }
 
     @Override

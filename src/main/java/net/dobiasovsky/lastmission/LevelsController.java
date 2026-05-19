@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
+import net.dobiasovsky.lastmission.Role;
 import net.dobiasovsky.lastmission.score.ScoreException;
 import net.dobiasovsky.lastmission.score.Score;
 import net.dobiasovsky.lastmission.score.ScoreRepository;
@@ -19,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 @Log4j2
 @NoArgsConstructor
@@ -37,6 +40,10 @@ public class LevelsController {
     private List<Score> scores;
     @Setter
     private App app;
+
+    private ResourceBundle bundle() {
+        return ResourceBundle.getBundle("msg", Locale.getDefault());
+    }
 
 
     @FXML
@@ -65,7 +72,7 @@ public class LevelsController {
                 String text = item.getId() + " - " + item.getName();
 
                 if (isWon) {
-                    text += " (Completed)";
+                    text += " (" + bundle().getString("label.completed") + ")";
                     setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
                 } else {
                     setStyle("-fx-text-fill: black;");
@@ -107,17 +114,17 @@ public class LevelsController {
     }
 
     private void renderEmptyDetails() {
-        nameLabel.setText("Name: -");
-        setIfPresent(totalLabel, "Total: -");
-        setIfPresent(neededLabel, "Needed: -");
-        setIfPresent(abilitiesLabel, "Abilities: -");
-        setIfPresent(bestTimeLabel, "Best time: -");
+        nameLabel.setText(bundle().getString("label.name") + ": -");
+        setIfPresent(totalLabel, bundle().getString("label.total") + ": -");
+        setIfPresent(neededLabel, bundle().getString("label.needed") + ": -");
+        setIfPresent(abilitiesLabel, bundle().getString("label.abilities") + ": -");
+        setIfPresent(bestTimeLabel, bundle().getString("label.best_time") + ": -");
     }
 
     private void renderBaseDetails(Level lvl) {
-        nameLabel.setText("Name: " + textOrDash(lvl.getName()));
-        setIfPresent(totalLabel, "Total: " + lvl.getTotalLemmings());
-        setIfPresent(neededLabel, "Needed: " + lvl.getNeededLemmings());
+        nameLabel.setText(bundle().getString("label.name") + ": " + textOrDash(lvl.getName()));
+        setIfPresent(totalLabel, bundle().getString("label.total") + ": " + lvl.getTotalLemmings());
+        setIfPresent(neededLabel, bundle().getString("label.needed") + ": " + lvl.getNeededLemmings());
     }
 
     private void renderAbilitiesDetails(Level lvl) {
@@ -127,14 +134,14 @@ public class LevelsController {
 
         Map<Role, Integer> abilities = lvl.getAbilityCounts();
         if (abilities == null) {
-            abilitiesLabel.setText("Abilities: -");
+            abilitiesLabel.setText(bundle().getString("label.abilities") + ": -");
             return;
         }
 
-        StringBuilder sb = new StringBuilder("Abilities: ");
-        sb.append("Block ").append(abilities.getOrDefault(Role.BLOCK, 0));
-        sb.append(", Build ").append(abilities.getOrDefault(Role.BUILD, 0));
-        sb.append(", Kill ").append(abilities.getOrDefault(Role.KILL, 0));
+        StringBuilder sb = new StringBuilder(bundle().getString("label.abilities")).append(": ");
+        sb.append(bundle().getString("ability.block")).append(" ").append(abilities.getOrDefault(Role.BLOCK, 0));
+        sb.append(", ").append(bundle().getString("ability.build")).append(" ").append(abilities.getOrDefault(Role.BUILD, 0));
+        sb.append(", ").append(bundle().getString("ability.kill")).append(" ").append(abilities.getOrDefault(Role.KILL, 0));
 
         abilitiesLabel.setText(sb.toString());
     }
@@ -151,7 +158,7 @@ public class LevelsController {
             .toList();
 
         if (top.isEmpty()) {
-            bestTimeLabel.setText("Best time: -");
+            bestTimeLabel.setText(bundle().getString("label.best_time") + ": -");
             return;
         }
 
@@ -164,7 +171,7 @@ public class LevelsController {
 
     private String buildTop10Text(List<Score> top) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Top 10:").append(System.lineSeparator());
+        sb.append(bundle().getString("label.top_10")).append(":").append(System.lineSeparator());
         int idx = 1;
         for (Score s : top) {
             sb.append(String.format(
@@ -182,7 +189,7 @@ public class LevelsController {
     }
 
     private String textOrAnonymous(String s) {
-        return (s == null || s.isBlank()) ? "Anonymous" : s;
+        return (s == null || s.isBlank()) ? bundle().getString("label.anonymous") : s;
     }
 
     private void setIfPresent(Label label, String text) {

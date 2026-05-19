@@ -20,31 +20,31 @@
             <Insets bottom="32" left="40" right="40" top="32" />
         </padding>
 
-        <Button fx:id="startButton" mnemonicParsing="false" onAction="#startGame" prefWidth="260" style="-fx-font-size: 30px;" text="Start">
+        <Button fx:id="startButton" mnemonicParsing="false" onAction="#startGame" prefWidth="260" style="-fx-font-size: 30px;" text="%button.new_game">
             <VBox.margin>
                 <Insets right="500.0" top="170.0" />
             </VBox.margin>
         </Button>
 
-        <Button fx:id="levelsButton" mnemonicParsing="false" onAction="#showLevels" prefWidth="240" style="-fx-font-size: 20px;" text="Levels">
+        <Button fx:id="levelsButton" mnemonicParsing="false" onAction="#showLevels" prefWidth="240" style="-fx-font-size: 20px;" text="%button.levels">
             <VBox.margin>
                 <Insets right="500.0" />
             </VBox.margin>
         </Button>
 
-        <Button fx:id="resetScoreButton" mnemonicParsing="false" onAction="#resetScores" prefWidth="240" style="-fx-font-size: 18px;" text="Reset score">
+        <Button fx:id="resetScoreButton" mnemonicParsing="false" onAction="#resetScores" prefWidth="240" style="-fx-font-size: 18px;" text="%button.reset_score">
             <VBox.margin>
                 <Insets right="500.0" />
             </VBox.margin>
         </Button>
 
-        <Button fx:id="exitButton" mnemonicParsing="false" onAction="#exitApp" prefWidth="240" style="-fx-font-size: 18px;" text="Exit">
+        <Button fx:id="exitButton" mnemonicParsing="false" onAction="#exitApp" prefWidth="240" style="-fx-font-size: 18px;" text="%button.exit">
             <VBox.margin>
                 <Insets right="500.0" />
             </VBox.margin>
         </Button>
 
-        <Button fx:id="muteButton" mnemonicParsing="false" onAction="#toggleMusic" prefHeight="45.0" prefWidth="135.0" style="-fx-font-size: 20px;" text="MUSIC ON">
+        <Button fx:id="muteButton" mnemonicParsing="false" onAction="#toggleMusic" prefHeight="45.0" prefWidth="135.0" style="-fx-font-size: 20px;" text="%button.music_on">
             <VBox.margin>
                 <Insets left="700.0" top="120.0" />
             </VBox.margin>

@@ -20,9 +20,9 @@
             <padding>
                 <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
             </padding>
-            <Button text="Back" onAction="#onBack"/>
+            <Button text="%label.back" onAction="#onBack"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Label text="Level Selection" style="-fx-font-size: 22px; -fx-font-weight: bold;">
+            <Label text="%label.level_selection" style="-fx-font-size: 22px; -fx-font-weight: bold;">
             </Label>
             <Region HBox.hgrow="ALWAYS"/>
         </HBox>
@@ -33,7 +33,7 @@
             <padding>
                 <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
             </padding>
-            <Label text="Levels" style="-fx-font-size: 18px; -fx-font-weight: bold;">
+            <Label text="%button.levels" style="-fx-font-size: 18px; -fx-font-weight: bold;">
             </Label>
             <ListView fx:id="levelList" VBox.vgrow="ALWAYS"/>
         </VBox>
@@ -44,20 +44,20 @@
             <padding>
                 <Insets top="16.0" right="16.0" bottom="16.0" left="16.0"/>
             </padding>
-            <Label text="Details" style="-fx-font-size: 18px; -fx-font-weight: bold;">
+            <Label text="%label.details" style="-fx-font-size: 18px; -fx-font-weight: bold;">
             </Label>
 
             <VBox spacing="6.0">
-                <Label fx:id="nameLabel" text="Name: \u2013"/>
-                <Label fx:id="totalLabel" text="Total: \u2013"/>
-                <Label fx:id="neededLabel" text="Needed: \u2013"/>
-                <Label fx:id="abilitiesLabel" text="Abilities: \u2013"/>
-                <Label fx:id="bestTimeLabel" text="Best time: \u2013"/>
+                <Label fx:id="nameLabel" text="%label.name"/>
+                <Label fx:id="totalLabel" text="%label.total"/>
+                <Label fx:id="neededLabel" text="%label.needed"/>
+                <Label fx:id="abilitiesLabel" text="%label.abilities"/>
+                <Label fx:id="bestTimeLabel" text="%label.best_time"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
 
-            <Button fx:id="playButton" text="Play" onAction="#onPlay" disable="true"
+            <Button fx:id="playButton" text="%label.play" onAction="#onPlay" disable="true"
                     prefHeight="48.0" maxWidth="1.7976931348623157E308"/>
         </VBox>
     </center>

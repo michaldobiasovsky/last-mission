@@ -8,14 +8,17 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.log4j.Log4j2;
+import net.dobiasovsky.lastmission.MusicSettings;
 import net.dobiasovsky.lastmission.score.Score;
 import net.dobiasovsky.lastmission.score.ScoreException;
 import net.dobiasovsky.lastmission.score.ScoreRepository;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ResourceBundle;
 
 @Log4j2
 @NoArgsConstructor
@@ -30,6 +33,10 @@ public class MainMenuController {
 
     @Setter
     private App app;
+
+    private ResourceBundle bundle() {
+        return ResourceBundle.getBundle("msg", Locale.getDefault());
+    }
 
 
     @FXML
@@ -105,7 +112,14 @@ public class MainMenuController {
 
     @FXML
     void initialize() {
+        initializeLocalizedButtons();
         updateStartButtonText();
+    }
+
+    private void initializeLocalizedButtons() {
+        levelsButton.setText(bundle().getString("button.levels"));
+        resetScoreButton.setText(bundle().getString("button.reset_score"));
+        exitButton.setText(bundle().getString("button.exit"));
     }
 
     public void updateMusicButton() {
@@ -117,7 +131,8 @@ public class MainMenuController {
 
     private void updateMuteButtonText(boolean musicOn) {
         if (muteButton != null) {
-            muteButton.setText(musicOn ? "MUSIC ON" : "MUSIC OFF");
+            String key = musicOn ? "button.music_on" : "button.music_off";
+            muteButton.setText(bundle().getString(key));
         }
     }
 
@@ -138,6 +153,7 @@ public class MainMenuController {
 
     private void updateStartButtonText() {
         boolean anyWon = hasAnyWonLevel();
-        startButton.setText(anyWon ? "Continue" : "New game");
+        String key = anyWon ? "button.continue" : "button.new_game";
+        startButton.setText(bundle().getString(key));
     }
 }

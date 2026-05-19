@@ -29,7 +29,7 @@ public class LevelRepository {
         Level l1 = new Level(
             1,
             "First steps",
-            "/net/dobiasovsky/michal/stargate/level1.png",
+            "/net/dobiasovsky/lastmission/level1.png",
             10,
             5,
             new Point2D(50, 50),
@@ -57,7 +57,7 @@ public class LevelRepository {
         Level l2 = new Level(
             2,
             "Deep Dive",
-            "/net/dobiasovsky/michal/stargate/level2.png",
+            "level2.png",
             15,
             5,
             new Point2D(50, 50),

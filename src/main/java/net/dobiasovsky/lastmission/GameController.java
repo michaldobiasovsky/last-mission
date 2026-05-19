@@ -17,12 +17,14 @@ import net.dobiasovsky.lastmission.score.ScoreException;
 import net.dobiasovsky.lastmission.score.ScoreRepository;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -53,6 +55,10 @@ public class GameController {
     private boolean levelFinished = false;
     @Setter
     private App app;
+
+    private ResourceBundle bundle() {
+        return ResourceBundle.getBundle("msg", Locale.getDefault());
+    }
 
 
     @FXML
@@ -224,14 +230,17 @@ public class GameController {
 
     private void updateUi() {
         int onTrack = (world != null) ? world.getLemmings().size() : 0;
-        lemmingsCount.setText("On track: " + onTrack);
+        String onTrackLabel = bundle().getString("ui.on_track");
+        lemmingsCount.setText(onTrackLabel + ": " + onTrack);
 
         long elapsed = (levelStartTime > 0) ? (System.currentTimeMillis() - levelStartTime) : 0;
-        time.setText("Time: " + formatTime(elapsed));
+        String timeLabel = bundle().getString("ui.time");
+        time.setText(timeLabel + ": " + formatTime(elapsed));
 
         int needed = (currentLevelObj != null) ? currentLevelObj.getNeededLemmings() : 0;
         int exited = (world != null) ? world.getExitedCount() : 0;
-        neededLemmings.setText("Goal: " + exited + "/" + needed);
+        String goalLabel = bundle().getString("ui.goal");
+        neededLemmings.setText(goalLabel + ": " + exited + "/" + needed);
 
         if (!levelFinished && needed > 0 && exited >= needed) {
             finishLevel();
@@ -254,12 +263,12 @@ public class GameController {
     }
 
     private void showLevelFailedDialog() {
-        javafx.scene.control.ButtonType retryButton = new javafx.scene.control.ButtonType("Retry");
-        javafx.scene.control.ButtonType closeButton = new javafx.scene.control.ButtonType("Close");
+        javafx.scene.control.ButtonType retryButton = new javafx.scene.control.ButtonType(bundle().getString("dialog.retry"));
+        javafx.scene.control.ButtonType closeButton = new javafx.scene.control.ButtonType(bundle().getString("dialog.close"));
 
         javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = createBaseDialog(
-            "Level failed",
-            "You lost! No astronauts left."
+            bundle().getString("dialog.level_failed"),
+            bundle().getString("dialog.you_lost")
         );
         dialog.getDialogPane().getButtonTypes().setAll(retryButton, closeButton);
 
@@ -292,13 +301,13 @@ public class GameController {
         final long timeTaken = System.currentTimeMillis() - levelStartTime;
         String timeStr = formatTime(timeTaken);
 
-        javafx.scene.control.ButtonType retryButton = new javafx.scene.control.ButtonType("Retry");
-        javafx.scene.control.ButtonType nextButton = new javafx.scene.control.ButtonType("Next level");
-        javafx.scene.control.ButtonType closeButton = new javafx.scene.control.ButtonType("Close");
+        javafx.scene.control.ButtonType retryButton = new javafx.scene.control.ButtonType(bundle().getString("dialog.retry"));
+        javafx.scene.control.ButtonType nextButton = new javafx.scene.control.ButtonType(bundle().getString("dialog.next_level"));
+        javafx.scene.control.ButtonType closeButton = new javafx.scene.control.ButtonType(bundle().getString("dialog.close"));
 
         javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = createBaseDialog(
-            "Level completed",
-            "Congratulations! Level completed."
+            bundle().getString("dialog.level_completed"),
+            bundle().getString("dialog.congratulations")
         );
 
         Level next = findNextLevel();
@@ -313,7 +322,7 @@ public class GameController {
 
         String playerName = (nameField.getText() != null && !nameField.getText().trim().isEmpty())
             ? nameField.getText().trim()
-            : "Anonymous";
+            : bundle().getString("label.anonymous");
 
         onLevelCompleted(playerName, timeTaken);
 
@@ -321,8 +330,11 @@ public class GameController {
     }
 
     private TextField setupScoreInput(javafx.scene.control.Dialog<?> dialog, String timeStr) {
-        Label info = new Label("Your time: " + timeStr + "\nEnter player name for the leaderboard:");
-        TextField nameField = new TextField("Anonymous");
+        String yourTimeText = bundle().getString("dialog.your_time");
+        String enterNameText = bundle().getString("dialog.enter_name");
+
+        Label info = new Label(yourTimeText + ": " + timeStr + "\n" + enterNameText + ":");
+        TextField nameField = new TextField(bundle().getString("label.anonymous"));
 
         VBox content = new VBox(8);
         content.getChildren().addAll(info, nameField);
@@ -385,9 +397,9 @@ public class GameController {
     }
 
     private void updateAbilityButtons() {
-        updateButtonForRole(Role.BLOCK, blockBtn, "Block");
-        updateButtonForRole(Role.BUILD, buildBtn, "Build");
-        updateButtonForRole(Role.KILL, killBtn, "Kill");
+        updateButtonForRole(Role.BLOCK, blockBtn, bundle().getString("ability.block"));
+        updateButtonForRole(Role.BUILD, buildBtn, bundle().getString("ability.build"));
+        updateButtonForRole(Role.KILL, killBtn, bundle().getString("ability.kill"));
     }
 
     private void updateButtonForRole(Role r, Button btn, String baseText) {
