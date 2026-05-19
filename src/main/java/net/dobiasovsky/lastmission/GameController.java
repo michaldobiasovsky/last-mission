@@ -118,9 +118,15 @@ public class GameController {
         if (uiUpdater != null) {
             uiUpdater.stop();
         }
+        if (world != null) {
+            world.shutdown();
+        }
     }
 
     public void startLevel(Level level) {
+        if (world != null) {
+            world.shutdown();
+        }
         if (timer != null) {
             timer.stop();
         }
@@ -177,9 +183,7 @@ public class GameController {
         double clickX = e.getX();
         double clickY = canvas.getHeight() - e.getY();
 
-        Lemming target = world.getLemmings().stream()
-            .filter(l -> l.getBoundingBox().contains(clickX, clickY))
-            .findFirst().orElse(null);
+        Lemming target = world.findLemmingAt(clickX, clickY);
         if (target == null) {
             return;
         }
@@ -199,7 +203,7 @@ public class GameController {
 
             case KILL:
                 if (decrementAbility(Role.KILL)) {
-                    world.getLemmings().remove(target);
+                    world.removeLemming(target);
                 }
                 break;
 

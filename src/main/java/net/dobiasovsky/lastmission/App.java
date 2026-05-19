@@ -234,7 +234,7 @@ public class App extends Application {
                 musicPlayer.dispose();
             }
 
-            URL musicUrl = getClass().getResource("/net/dobiasovsky/lastmission/cosmo.mp3");
+            URL musicUrl = getClass().getResource("cosmo.mp3");
             if (musicUrl == null) {
                 log.warn("Background music file not found");
                 return;

@@ -8,12 +8,20 @@ import javafx.scene.media.AudioClip;
 
 import java.io.InputStream;
 import java.net.URL;
-
+import java.util.List;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class Lemming extends Entity implements DrawableSimulable{
+    private static final double SCALE = 0.7;
+    private static final Image WALK_RIGHT_TEMPLATE = loadSharedImage("cosmo_right.gif");
+    private static final Image WALK_LEFT_TEMPLATE = loadSharedImage("cosmo_left.gif");
+    private static final Image BLOCK_TEMPLATE = loadSharedImage("stop.gif");
+    private static final AudioClip WEE_SOUND = loadSharedSound("wee.mp3");
+    private static final double DEFAULT_WIDTH = WALK_RIGHT_TEMPLATE.getWidth() * SCALE;
+    private static final double DEFAULT_HEIGHT = WALK_RIGHT_TEMPLATE.getHeight() * SCALE;
+
     private final double scale;
     private final double gravity;
     private final double speedMultiplier;
@@ -40,6 +48,9 @@ public class Lemming extends Entity implements DrawableSimulable{
     private boolean onFloor = false;
     private boolean hasScreamed = false;
     private boolean hasTouchedGroundOnce = false;
+    private volatile boolean running = false;
+    private Thread behaviorThread;
+    private volatile World world;
 
     public Lemming(double x, double y) {
         super(x, y);
@@ -50,59 +61,101 @@ public class Lemming extends Entity implements DrawableSimulable{
         this.climbTolerance = 2.0;
         this.directionCooldownSec = 0.15;
 
-        this.walkRight = loadImage("cosmo_right.gif");
-        this.walkLeft = loadImage("cosmo_left.gif");
-        this.blockImg = loadImage("stop.gif");
-        this.weeSound = loadSound("wee.mp3");
+        this.walkRight = WALK_RIGHT_TEMPLATE;
+        this.walkLeft = WALK_LEFT_TEMPLATE;
+        this.blockImg = BLOCK_TEMPLATE;
+        this.weeSound = WEE_SOUND;
 
         this.direction = 1;
         this.velocityY = 0;
         this.role = Role.DEFAULT;
         this.speedX = 40;
         this.soundVolume = 0.2;
-        this.width = walkRight.getWidth() * scale;
-        this.height = walkRight.getHeight() * scale;
+        this.width = DEFAULT_WIDTH;
+        this.height = DEFAULT_HEIGHT;
     }
 
-    private Image loadImage(String path) {
-        InputStream stream = Lemming.class.getResourceAsStream(path);
-        if (stream == null) {
-            throw new IllegalArgumentException("Image not found: " + path);
+    private static Image loadSharedImage(String path) {
+        try (InputStream stream = Lemming.class.getResourceAsStream(path)) {
+            if (stream == null) {
+                throw new IllegalArgumentException("Image not found: " + path);
+            }
+            return new Image(stream);
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException("Failed to load image: " + path, e);
         }
-        return new Image(stream);
     }
 
-    private AudioClip loadSound(String path) {
+    private static AudioClip loadSharedSound(String path) {
         URL url = Lemming.class.getResource(path);
         if (url == null) {
-            log.error("Sound not found: {}", path);
             return null;
         }
         return new AudioClip(url.toExternalForm());
     }
 
-    @Override
-    public double getWidth() {
-        return width;
+    public static double getDefaultSpawnWidth() {
+        return DEFAULT_WIDTH;
     }
 
-    @Override
-    public double getHeight() {
-        return height;
+    public static double getDefaultSpawnHeight() {
+        return DEFAULT_HEIGHT;
     }
 
-    @Override
-    public Rectangle2D getBoundingBox() {
-        return new Rectangle2D(getX(), getY(), getWidth(), getHeight());
+    public synchronized void startBehavior(World world) {
+        if (running) {
+            return;
+        }
+        this.world = world;
+        this.running = true;
+
+        behaviorThread = new Thread(this::runBehaviorLoop, "Lemming-" + System.identityHashCode(this));
+        behaviorThread.setDaemon(true);
+        behaviorThread.start();
     }
 
-    public void changeDirection() {
+    public synchronized void stopBehavior() {
+        running = false;
+        Thread thread = behaviorThread;
+        if (thread != null) {
+            thread.interrupt();
+        }
+    }
+
+    private void runBehaviorLoop() {
+        long lastFrame = System.nanoTime();
+        while (running) {
+            long now = System.nanoTime();
+            double delta = (now - lastFrame) / 1_000_000_000D;
+            lastFrame = now;
+
+            World currentWorld = world;
+            if (currentWorld == null) {
+                break;
+            }
+
+            simulate(delta, currentWorld);
+
+            if (!running || !currentWorld.containsLemming(this)) {
+                break;
+            }
+
+            try {
+                Thread.sleep(33);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+        running = false;
+    }
+
+    public synchronized void changeDirection() {
         if (directionCooldown > 0) return;
         direction *= -1;
         directionCooldown = directionCooldownSec;
     }
 
-    public void setRole(Role r) {
+    public synchronized void setRole(Role r) {
         this.role = r;
         if (r == Role.BLOCK) {
             this.width = blockImg.getWidth() * scale;
@@ -112,11 +165,11 @@ public class Lemming extends Entity implements DrawableSimulable{
         }
     }
 
-    public void move(double dist) {
+    public synchronized void move(double dist) {
         position = position.add(dist * direction, 0);
     }
 
-    public boolean becomeBlock() {
+    public synchronized boolean becomeBlock() {
         if (!onGround) return false;
         setRole(Role.BLOCK);
         this.velocityY = 0;
@@ -124,41 +177,47 @@ public class Lemming extends Entity implements DrawableSimulable{
     }
 
     public boolean buildStairs(World world, int steps) {
-        if (role == Role.BLOCK) return false;
-        if (steps <= 0) return false;
-        if (!onFloor) return false;
+        List<Barrier> barrierSnapshot = world.snapshotBarriers();
+        List<Step> stepsToAdd = new java.util.ArrayList<>();
 
-        double startX = getX();
-        double startY = getY();
-        double overlapX = 5;
+        synchronized (this) {
+            if (role == Role.BLOCK) return false;
+            if (steps <= 0) return false;
+            if (!onFloor) return false;
 
-        double stepWidth = getWidth() * 0.5;
-        double stepHeight = getHeight() * 0.5;
+            double startX = getX();
+            double startY = getY();
+            double overlapX = 5;
 
-        boolean builtAny = false;
+            double stepWidth = getWidth() * 0.5;
+            double stepHeight = getHeight() * 0.5;
 
-        for (int i = 0; i < steps; i++) {
-            double xi = startX + direction * (i + 1) * (stepWidth - overlapX / 2);
-            double yi = startY + (i * stepHeight);
+            for (int i = 0; i < steps; i++) {
+                double xi = startX + direction * (i + 1) * (stepWidth - overlapX / 2);
+                double yi = startY + (i * stepHeight);
 
-            boolean exists = world.getBarriers().stream()
-                .anyMatch(b -> Math.abs(b.getX() - xi) < stepWidth && Math.abs(b.getY() - yi) < stepHeight * 0.5);
+                boolean exists = barrierSnapshot.stream()
+                    .anyMatch(b -> Math.abs(b.getX() - xi) < stepWidth && Math.abs(b.getY() - yi) < stepHeight * 0.5);
 
-            if (!exists) {
-                world.getBarriers().add(new Step(xi, yi, stepWidth, stepHeight, direction));
-                builtAny = true;
+                if (!exists) {
+                    stepsToAdd.add(new Step(xi, yi, stepWidth, stepHeight, direction));
+                }
             }
         }
 
-        return builtAny;
+        for (Step step : stepsToAdd) {
+            world.addBarrier(step);
+        }
+
+        return !stepsToAdd.isEmpty();
     }
 
-    public void checkCollisionWithBarrier(Barrier barrier, World world) {
+    public void checkCollisionWithBarrier(Barrier barrier, List<Barrier> barrierSnapshot) {
         if (!isOverlapping(barrier)) {
             return;
         }
 
-        if (handleStepCollision(barrier, world)) {
+        if (handleStepCollision(barrier, barrierSnapshot)) {
             return;
         }
 
@@ -181,7 +240,7 @@ public class Lemming extends Entity implements DrawableSimulable{
             && y + h > barrier.getY();
     }
 
-    private boolean handleStepCollision(Barrier barrier, World world) {
+    private boolean handleStepCollision(Barrier barrier, List<Barrier> barrierSnapshot) {
         if (!barrier.isStep()) return false;
 
         Step step = (Step) barrier;
@@ -198,7 +257,7 @@ public class Lemming extends Entity implements DrawableSimulable{
         if (canClimb && !isTooHigh && y < barrierTop && y + h > barrierBottom) {
             Rectangle2D targetBox = new Rectangle2D(getX(), barrierTop, getWidth(), h);
 
-            boolean isCeilingBlocked = world.getBarriers().stream()
+            boolean isCeilingBlocked = barrierSnapshot.stream()
                 .filter(b -> !b.isStep())
                 .anyMatch(b -> b.getBoundingBox().intersects(targetBox));
 
@@ -303,7 +362,7 @@ public class Lemming extends Entity implements DrawableSimulable{
     }
 
     @Override
-    public void draw(GraphicsContext gc) {
+    public synchronized void draw(GraphicsContext gc) {
         double x = getX();
         double y = getY();
 
@@ -315,55 +374,89 @@ public class Lemming extends Entity implements DrawableSimulable{
         gc.restore();
     }
 
-    private Image getCurrentImage() {
+    private synchronized Image getCurrentImage() {
         if (role == Role.BLOCK) {
             return blockImg;
         }
         return (direction == 1) ? walkRight : walkLeft;
     }
 
+    @Override
+    public synchronized double getX() {
+        return super.getX();
+    }
+
+    @Override
+    public synchronized double getY() {
+        return super.getY();
+    }
+
+    @Override
+    public synchronized double getWidth() {
+        return width;
+    }
+
+    @Override
+    public synchronized double getHeight() {
+        return height;
+    }
+
+    @Override
+    public synchronized Rectangle2D getBoundingBox() {
+        return new Rectangle2D(getX(), getY(), getWidth(), getHeight());
+    }
+
     public void simulate(double deltaTime, World world) {
-        double previousX = getX();
-        double previousY = getY();
+        List<Barrier> barrierSnapshot = world.snapshotBarriers();
+        List<Lemming> lemmingSnapshot = world.snapshotLemmings();
 
-        if (directionCooldown > 0) {
-            directionCooldown -= deltaTime;
-        }
+        double previousX;
+        double previousY;
+        synchronized (this) {
+            previousX = getX();
+            previousY = getY();
 
-        if (role == Role.BLOCK) {
-            velocityY = 0;
-            return;
-        }
-
-        onGround = false;
-        onFloor = false;
-
-        move(speedX * speedMultiplier * deltaTime);
-        velocityY -= gravity * deltaTime;
-        position = position.add(0, velocityY * deltaTime);
-
-        if (velocityY < -150 && !onGround && !hasScreamed && hasTouchedGroundOnce) {
-            if (weeSound != null) {
-                weeSound.play(soundVolume);
+            if (directionCooldown > 0) {
+                directionCooldown -= deltaTime;
             }
-            hasScreamed = true;
-        }
 
-        for (Barrier barrier : world.getBarriers()) {
-            checkCollisionWithBarrier(barrier, world);
-        }
+            if (role == Role.BLOCK) {
+                velocityY = 0;
+                return;
+            }
 
-        for (Lemming other : world.getLemmings()) {
-            if (other != this) {
-                checkCollisionWithLemming(other);
+            onGround = false;
+            onFloor = false;
+
+            move(speedX * speedMultiplier * deltaTime);
+            velocityY -= gravity * deltaTime;
+            position = position.add(0, velocityY * deltaTime);
+
+            if (velocityY < -150 && !onGround && !hasScreamed && hasTouchedGroundOnce) {
+                if (weeSound != null) {
+                    weeSound.play(soundVolume);
+                }
+                hasScreamed = true;
             }
         }
 
-        if (onGround) {
-            hasScreamed = false;
-            hasTouchedGroundOnce = true;
-        }
+        synchronized (this) {
+            for (Barrier barrier : barrierSnapshot) {
+                checkCollisionWithBarrier(barrier, barrierSnapshot);
+            }
 
-        log.trace("Lemming position changed from ({}, {}) to ({}, {})", previousX, previousY, getX(), getY());
+            for (Lemming other : lemmingSnapshot) {
+                if (other != this) {
+                    checkCollisionWithLemming(other);
+                }
+            }
+
+            if (onGround) {
+                hasScreamed = false;
+                hasTouchedGroundOnce = true;
+            }
+
+            log.trace("Lemming position changed from ({}, {}) to ({}, {})", previousX, previousY, getX(), getY());
+        }
     }
 }
