@@ -18,7 +18,7 @@ public class Lemming extends Entity implements DrawableSimulable{
     private static final Image WALK_RIGHT_TEMPLATE = loadSharedImage("cosmo_right.gif");
     private static final Image WALK_LEFT_TEMPLATE = loadSharedImage("cosmo_left.gif");
     private static final Image BLOCK_TEMPLATE = loadSharedImage("stop.gif");
-    private static final AudioClip WEE_SOUND = loadSharedSound("wee.mp3");
+    private static final AudioClip WEE_SOUND = loadSharedSound("wee.wav");
     private static final double DEFAULT_WIDTH = WALK_RIGHT_TEMPLATE.getWidth() * SCALE;
     private static final double DEFAULT_HEIGHT = WALK_RIGHT_TEMPLATE.getHeight() * SCALE;
 
