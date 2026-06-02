@@ -59,9 +59,9 @@ public class App extends Application {
             log.info("Application startup initiated");
             this.primaryStage = primaryStage;
             primaryStage.setTitle("LAST MISSION");
-            primaryStage.setResizable(true);
-            primaryStage.setMinWidth(appWidth / 2 + 16);
-            primaryStage.setMinHeight(appHeight / 2 + 39);
+            primaryStage.setResizable(false);
+            primaryStage.setWidth(appWidth + 16);
+            primaryStage.setHeight(appHeight + 39);
 
             // Initialize localization
             initializeLocalization();
@@ -74,7 +74,6 @@ public class App extends Application {
             primaryStage.getIcons().add(iconImage);
 
             primaryStage.show();
-            installAspectRatioListener(primaryStage);
 
             setMusicEnabled(musicEnabled);
             primaryStage.setOnCloseRequest(this::exitProgram);
@@ -274,6 +273,10 @@ public class App extends Application {
         } else {
             shutdownMusicPlayer();
         }
+    }
+
+    public void toggleFullscreen() {
+        primaryStage.setFullScreen(!primaryStage.isFullScreen());
     }
 
     private void initializeLocalization() {

@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 
-<BorderPane fx:id="root" prefHeight="770.0" prefWidth="1025.0" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.dobiasovsky.lastmission.GameController">
+<BorderPane fx:id="root" prefHeight="770.0" prefWidth="1025.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="net.dobiasovsky.lastmission.GameController">
     <bottom>
         <HBox alignment="TOP_CENTER" spacing="40.0" BorderPane.alignment="CENTER">
             <Button fx:id="blockBtn" mnemonicParsing="false" onAction="#block" style="-fx-background-color: RED; -fx-font-size: 20px;" text="%button.block" textAlignment="CENTER">
@@ -66,7 +66,7 @@
     </center>
     <top>
         <HBox minHeight="-Infinity" prefHeight="35.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-            <Button fx:id="stop" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" prefHeight="25.0" prefWidth="67.0" text="%button.stop" HBox.hgrow="ALWAYS">                    <HBox.margin>
+            <Button fx:id="stop" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onStop" prefHeight="26.0" text="%button.stop" HBox.hgrow="ALWAYS">                    <HBox.margin>
                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
             </HBox.margin>
             </Button>

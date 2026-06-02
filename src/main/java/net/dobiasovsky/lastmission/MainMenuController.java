@@ -30,6 +30,7 @@ public class MainMenuController {
     @FXML private Button levelsButton;
     @FXML private Button resetScoreButton;
     @FXML private Button muteButton;
+    @FXML private Button fullscreenButton;
 
     @Setter
     private App app;
@@ -149,6 +150,12 @@ public class MainMenuController {
         } catch (ScoreException e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void toggleFullscreen(ActionEvent event) {
+        if (app == null) return;
+        app.toggleFullscreen();
     }
 
     private void updateStartButtonText() {
