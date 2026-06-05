@@ -53,7 +53,7 @@ cd last-mission
 mvn clean javafx:run
 ```
 
-#### Using the provided script:
+#### Run the game:
 
 ```bash
 chmod +x run.sh
