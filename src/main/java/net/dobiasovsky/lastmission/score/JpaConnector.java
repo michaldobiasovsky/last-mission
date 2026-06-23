@@ -4,6 +4,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
+import net.dobiasovsky.lastmission.FilePathResolver;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,8 +13,19 @@ import java.util.Map;
 public class JpaConnector implements AutoCloseable {
 
     private static final String PERSISTENCE_UNIT = "java2";
-    private static final EntityManagerFactory ENTITY_MANAGER_FACTORY =
-        Persistence.createEntityManagerFactory(PERSISTENCE_UNIT);
+
+    private static final EntityManagerFactory ENTITY_MANAGER_FACTORY = createEntityManagerFactory();
+
+    private static EntityManagerFactory createEntityManagerFactory() {
+        Map<String, String> properties = new HashMap<>();
+
+        String dbPath = FilePathResolver.getDatabaseFilePath().toAbsolutePath().toString();
+
+        properties.put("jakarta.persistence.jdbc.url", "jdbc:h2:file:" + dbPath);
+        properties.put("hibernate.hbm2ddl.auto", "update");
+
+        return Persistence.createEntityManagerFactory(PERSISTENCE_UNIT, properties);
+    }
 
     private final EntityManager entityManager;
 
@@ -22,10 +35,10 @@ public class JpaConnector implements AutoCloseable {
 
     public List<Score> loadAll() {
         return entityManager.createQuery(
-                "select s from Score s join fetch s.player order by s.level asc, s.timeMillis asc",
-                Score.class
-            )
-            .getResultList();
+                        "select s from Score s join fetch s.player order by s.level asc, s.timeMillis asc",
+                        Score.class
+                )
+                .getResultList();
     }
 
     public void replaceAll(List<Score> scores) {
@@ -69,4 +82,3 @@ public class JpaConnector implements AutoCloseable {
         }
     }
 }
-

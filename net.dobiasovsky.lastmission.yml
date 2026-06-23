@@ -1,0 +1,44 @@
+id: net.dobiasovsky.lastmission
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.openjdk17
+command: last-mission
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --device=dri
+modules:
+  # 1. OFICIÁLNÍ MODUL: Nastaví OpenJDK 17 jako výchozí prostředí pro běh aplikace
+  - name: openjdk
+    buildsystem: simple
+    build-commands:
+      - /usr/lib/sdk/openjdk17/install.sh
+
+  # 2. OFICIÁLNÍ MODUL: Samotná kompilace hry ze zdrojáků na GitHubu
+  - name: last-mission
+    buildsystem: simple
+    build-commands:
+      # Tady se spustí kompilace přímo na serveru Flathubu pomocí staženého Maven wrapperu
+      - ./mvnw clean package -DskipTests
+
+      # Instalace vygenerovaného JARu a metadat do finálního sandboxu
+      - mkdir -p /app/bin
+      - cp target/lastmission-1.0.0.jar /app/bin/last-mission.jar
+
+      # Integrace do systému (ikona, desktop, metainfo)
+      - mkdir -p /app/share/applications /app/share/metainfo /app/share/icons/hicolor/512x512/apps
+      - cp flatpak/net.dobiasovsky.lastmission.desktop /app/share/applications/
+      - cp flatpak/net.dobiasovsky.lastmission.metainfo.xml /app/share/metainfo/
+      - cp flatpak/net.dobiasovsky.lastmission.png /app/share/icons/hicolor/512x512/apps/
+
+      # Spouštěcí skript – oficiálně se volá "java", protože openjdk extension ho po instalaci do /usr/bin zaregistruje sama!
+      - echo '#!/bin/sh' > /app/bin/last-mission
+      - echo 'exec java -jar /app/bin/last-mission.jar "$@"' >> /app/bin/last-mission
+      - chmod +x /app/bin/last-mission
+    sources:
+      - type: git
+        url: https://github.com/michaldobiasovsky/last-mission.git
+        tag: main

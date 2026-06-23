@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -6,11 +7,15 @@
     <groupId>net.dobiasovsky</groupId>
     <artifactId>lastmission</artifactId>
     <version>1.0.0</version>
+    <name>Last Mission</name>
+    <description>A 2D space arcade game built with JavaFX.</description>
+    <url>https://github.com/michaldobiasovsky/last-mission</url>
     <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>25</maven.compiler.release>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
         <javafx.version>25</javafx.version>
         <log4j2.version>2.24.3</log4j2.version>
         <lombok.version>1.18.42</lombok.version>
@@ -109,7 +114,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.15.0</version>
                 <configuration>
-                    <release>25</release>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -118,6 +122,59 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>uk.co.bithatch</groupId>
+                <artifactId>flatpak-maven-plugin</artifactId>
+                <version>0.0.5</version>
+                <executions>
+                    <execution>
+                        <id>lastmission-flatpak-generate</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <mainClass>net.dobiasovsky.lastmission.App</mainClass>
+                            <modules>false</modules>
+                            <iconFile>flatpak/net.dobiasovsky.lastmission.png</iconFile>
+                            <vmArgs>
+                                <vmArg>--module-path=/app/share</vmArg>
+                                <vmArg>--add-modules=javafx.controls,javafx.media,javafx.fxml,javafx.graphics</vmArg>
+
+                                <vmArg>--enable-native-access=javafx.graphics</vmArg>
+                                <vmArg>--enable-native-access=javafx.media</vmArg>
+                            </vmArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>patch-flatpak-manifest</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo file="${project.build.directory}/app/net.dobiasovsky.Lastmission.yml" append="true"><![CDATA[
+- "--socket=wayland"
+- "--socket=pulseaudio"
+- "--device=dri"
+sdk-extensions:
+  - "org.freedesktop.Sdk.Extension.openjdk25"
+]]></echo>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
