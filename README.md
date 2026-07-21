@@ -45,12 +45,12 @@ astronauts safely across hazardous environments and get them to the rocket for l
 
 You can build and execute the application easily using Maven or the provided shell script.
 
-#### Using Maven:
+#### Using Maven Wrapper:
 
 ```bash
 git clone https://github.com/michaldobiasovsky/last-mission.git
 cd last-mission
-mvn clean javafx:run
+./mvnw clean javafx:run
 ```
 
 #### Run the game:

@@ -32,12 +32,17 @@ public class App extends Application {
         this.appWidth = 1024;
         this.appHeight = 768;
         this.aspectRatio = appWidth / appHeight;
+        this.windowedWidth = appWidth + 16;
+        this.windowedHeight = appHeight + 39;
     }
 
     private final double appWidth;
     private final double appHeight;
     private final double aspectRatio;
     private final AtomicBoolean resizing = new AtomicBoolean(false);
+    private double windowedWidth;
+    private double windowedHeight;
+    private boolean preferredFullscreen;
 
     private Stage primaryStage;
     private MediaPlayer musicPlayer;
@@ -60,8 +65,9 @@ public class App extends Application {
             this.primaryStage = primaryStage;
             primaryStage.setTitle("LAST MISSION");
             primaryStage.setResizable(false);
-            primaryStage.setWidth(appWidth + 16);
-            primaryStage.setHeight(appHeight + 39);
+            primaryStage.setWidth(windowedWidth);
+            primaryStage.setHeight(windowedHeight);
+            installWindowStateListeners(primaryStage);
 
             // Initialize localization
             initializeLocalization();
@@ -108,7 +114,7 @@ public class App extends Application {
 
         Scene scene = createScaledScene(root);
         applyCommonSceneStyles(scene);
-        primaryStage.setScene(scene);
+        setScenePreservingWindowState(scene);
     }
 
     public void switchToLevelsSelection() throws IOException {
@@ -122,7 +128,7 @@ public class App extends Application {
 
         Scene scene = createScaledScene(root);
         applyCommonSceneStyles(scene);
-        primaryStage.setScene(scene);
+        setScenePreservingWindowState(scene);
     }
 
 
@@ -138,9 +144,28 @@ public class App extends Application {
 
         Scene scene = createScaledScene(root);
         applyCommonSceneStyles(scene);
-        primaryStage.setScene(scene);
+        setScenePreservingWindowState(scene);
 
         gameController.startLevel(level);
+    }
+
+    private void setScenePreservingWindowState(Scene scene) {
+        boolean restoreFullscreen = preferredFullscreen || primaryStage.isFullScreen();
+        double widthToRestore = currentOrRememberedWidth();
+        double heightToRestore = currentOrRememberedHeight();
+
+        primaryStage.setScene(scene);
+
+        if (!restoreFullscreen) {
+            restoreWindowedBounds(widthToRestore, heightToRestore);
+            return;
+        }
+
+        Platform.runLater(() -> {
+            if (!primaryStage.isFullScreen()) {
+                primaryStage.setFullScreen(true);
+            }
+        });
     }
 
     private Scene createScaledScene(Parent view) {
@@ -218,6 +243,55 @@ public class App extends Application {
                 }
             });
         });
+    }
+
+    private void installWindowStateListeners(Stage stage) {
+        stage.fullScreenProperty().addListener((obs, wasFullScreen, isFullScreen) -> {
+            preferredFullscreen = isFullScreen;
+            if (!isFullScreen) {
+                restoreWindowedBounds(windowedWidth, windowedHeight);
+            }
+        });
+
+        stage.widthProperty().addListener((obs, oldWidth, newWidth) -> rememberWindowedBounds());
+        stage.heightProperty().addListener((obs, oldHeight, newHeight) -> rememberWindowedBounds());
+    }
+
+    private void rememberWindowedBounds() {
+        if (primaryStage == null || primaryStage.isFullScreen()) {
+            return;
+        }
+
+        if (primaryStage.getWidth() > 0) {
+            windowedWidth = primaryStage.getWidth();
+        }
+        if (primaryStage.getHeight() > 0) {
+            windowedHeight = primaryStage.getHeight();
+        }
+    }
+
+    private void restoreWindowedBounds(double width, double height) {
+        if (width > 0) {
+            primaryStage.setWidth(width);
+        }
+        if (height > 0) {
+            primaryStage.setHeight(height);
+        }
+        rememberWindowedBounds();
+    }
+
+    private double currentOrRememberedWidth() {
+        if (primaryStage != null && primaryStage.getWidth() > 0) {
+            return primaryStage.getWidth();
+        }
+        return windowedWidth;
+    }
+
+    private double currentOrRememberedHeight() {
+        if (primaryStage != null && primaryStage.getHeight() > 0) {
+            return primaryStage.getHeight();
+        }
+        return windowedHeight;
     }
 
     private void applyCommonSceneStyles(Scene scene) {

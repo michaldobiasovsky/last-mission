@@ -42,15 +42,29 @@ public class FilePathResolver {
         if (osName.contains("win")) {
             // Windows: AppData\Roaming\LastMission
             String appData = System.getenv("APPDATA");
-            return Paths.get(appData, APP_DIR, fileName);
+            if (hasText(appData)) {
+                return Paths.get(appData, APP_DIR, fileName);
+            }
+
+            String home = System.getProperty("user.home");
+            return Paths.get(home, "AppData", "Roaming", APP_DIR, fileName);
         } else if (osName.contains("mac")) {
             // macOS: ~/Library/Application Support/LastMission
             String home = System.getProperty("user.home");
             return Paths.get(home, "Library", "Application Support", APP_DIR, fileName);
         } else {
+            String xdgDataHome = System.getenv("XDG_DATA_HOME");
+            if (hasText(xdgDataHome)) {
+                return Paths.get(xdgDataHome, APP_DIR, fileName);
+            }
+
             // Linux: ~/.local/share/LastMission
             String home = System.getProperty("user.home");
             return Paths.get(home, ".local", "share", APP_DIR, fileName);
         }
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }
