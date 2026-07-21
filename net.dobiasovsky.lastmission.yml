@@ -23,7 +23,7 @@ modules:
       env:
         JAVA_HOME: /usr/lib/sdk/openjdk25
     build-commands:
-      - ./apache-maven-3.9.11/bin/mvn --batch-mode --no-transfer-progress clean package -DskipTests
+      - MAVEN_BIN="$(find . -maxdepth 4 -type f -path '*/bin/mvn' | head -n 1)" && "$MAVEN_BIN" --batch-mode --no-transfer-progress clean package -DskipTests
       - mkdir -p /app/bin /app/share/lastmission /app/share/applications /app/share/metainfo /app/share/icons/hicolor/512x512/apps
       - install -Dm644 target/lastmission-1.0.0.jar /app/share/lastmission/lastmission.jar
       - cp target/libs/*.jar /app/share/lastmission/
