@@ -33,12 +33,12 @@ modules:
       - install -Dm644 flatpak/net.dobiasovsky.lastmission.desktop /app/share/applications/net.dobiasovsky.lastmission.desktop
       - install -Dm644 flatpak/net.dobiasovsky.lastmission.metainfo.xml /app/share/metainfo/net.dobiasovsky.lastmission.metainfo.xml
       - install -Dm644 flatpak/net.dobiasovsky.lastmission.png /app/share/icons/hicolor/512x512/apps/net.dobiasovsky.lastmission.png
-      - printf '%s\n' '#!/bin/sh' 'exec java --module-path /app/share/lastmission --add-modules ALL-MODULE-PATH --enable-native-access=javafx.graphics,javafx.media -m net.dobiasovsky.lastmission/net.dobiasovsky.lastmission.App "$@"' > /app/bin/last-mission
+      - printf '%s\n' '#!/bin/sh' 'exec /app/jre/bin/java --module-path /app/share/lastmission --add-modules ALL-MODULE-PATH --enable-native-access=javafx.graphics,javafx.media -m net.dobiasovsky.lastmission/net.dobiasovsky.lastmission.App "$@"' > /app/bin/last-mission
       - chmod +x /app/bin/last-mission
     sources:
       - type: git
         url: https://github.com/michaldobiasovsky/last-mission.git
-        tag: v1.0.2
+        tag: v1.0.3
       - type: file
         url: https://repo.maven.apache.org/maven2/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar
         sha256: 3488a4e9994c26596baaceebee58cad36a50e3bdaec5be72b5834d3c3b560306
