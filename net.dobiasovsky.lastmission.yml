@@ -6,10 +6,11 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.openjdk25
 command: last-mission
 finish-args:
-  - --socket=wayland
-  - --socket=fallback-x11
+  - --share=ipc
+  - --socket=x11
   - --socket=pulseaudio
   - --device=dri
+  - --env=GDK_BACKEND=wayland,x11
 modules:
   - name: openjdk
     buildsystem: simple
@@ -39,6 +40,7 @@ modules:
       - type: git
         url: https://github.com/michaldobiasovsky/last-mission.git
         tag: v1.0.3
+        commit: 4da246e2e74d04504c47484101acf0c2c0db0537
       - type: file
         url: https://repo.maven.apache.org/maven2/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar
         sha256: 3488a4e9994c26596baaceebee58cad36a50e3bdaec5be72b5834d3c3b560306
