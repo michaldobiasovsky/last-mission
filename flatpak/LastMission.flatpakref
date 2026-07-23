@@ -4,3 +4,4 @@ Title=Last Mission
 Url=https://flatpak.dobiasovsky.net/
 IsRuntime=false
 GPGVerify=false
+NoGPGVerify=true
