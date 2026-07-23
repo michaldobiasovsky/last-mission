@@ -39,8 +39,8 @@ modules:
     sources:
       - type: git
         url: https://github.com/michaldobiasovsky/last-mission.git
-        tag: v1.0.3
-        commit: 4da246e2e74d04504c47484101acf0c2c0db0537
+        tag: v1.0.4
+        commit: 586755e8a14c1a498148d56b30b5f0f922067e8d
       - type: file
         url: https://repo.maven.apache.org/maven2/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar
         sha256: 3488a4e9994c26596baaceebee58cad36a50e3bdaec5be72b5834d3c3b560306

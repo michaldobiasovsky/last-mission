@@ -23,7 +23,7 @@
     </description>
 
     <launchable type="desktop-id">net.dobiasovsky.lastmission.desktop</launchable>
-    <url type="homepage">https://dobiasovsky.net</url>
+    <url type="homepage">https://michal.dobiasovsky.net</url>
     <url type="bugtracker">https://github.com/michaldobiasovsky/last-mission/issues</url>
 
     <screenshots>
