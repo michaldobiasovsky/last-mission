@@ -1,7 +1,7 @@
 [Flatpak Ref]
 Name=net.dobiasovsky.lastmission
 Title=Last Mission
-Branch=stable
+Branch=master
 Url=https://flatpak.dobiasovsky.net/
 IsRuntime=false
 RuntimeRepo=https://flathub.org/repo/flathub.flatpakrepo
